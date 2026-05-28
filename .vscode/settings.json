@@ -3,7 +3,7 @@
         {
             "previewLimit": 50,
             "driver": "SQLite",
-            "database": "${workspaceFolder:Lab3}/data/fountainViewHall.db",
+            "database": "${workspaceFolder:Lab3}/src/lab3/data/fountainViewHall.db",
             "name": "Fountain view hall"
         }
     ]
