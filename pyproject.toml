@@ -1,9 +1,23 @@
 [project]
 name = "lab3"
 version = "0.1.0"
-description = ""
+description = "This is a CRUD compliant event booking cli for Fountain View Hall"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "textual>=8.2.7",
+    "holidays>=0.97",
+    "questionary>=2.1.1",
 ]
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+tui = "lab3.main:tui"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lab3"]
