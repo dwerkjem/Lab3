@@ -2,15 +2,16 @@
 
 import datetime
 import holidays
+import sys
 import sqlite3
 import questionary
 from questionary import Validator, ValidationError, prompt, Choice
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-schema_path = BASE_DIR / "schema.sql"
+schema_path = BASE_DIR / "sql/schema.sql"
 
-data_dir = BASE_DIR / "data"
+data_dir = BASE_DIR.parent.parent / "data"
 
 db_path = data_dir / "fountainViewHall.db"
 
@@ -30,7 +31,7 @@ def admin_flow():
     password = questionary.password(
         "Verify with a password\n  The password is `Password123` for demo purposes"
     ).ask()
-    if password == "Password123":
+    if password == "Password123": # in production this would be encrypted and read from a .env file
         questionary.print("Welcome Admin", style="bold fg:ansigreen")
     else:
         questionary.print("You are unauthorized", style="bold fg:ansired")
@@ -42,8 +43,11 @@ def validate_full_name(name):
 
     parts = name.strip().split()
 
-    if len(parts) < 2:
+    if len(parts) < 2 and name.lower() != "quit": # quit can be typed to quit at any time
         return "Please enter at least a first and last name."
+    
+    if len(parts) > 3:
+        return "Please only enter a first, (optional) middle, and a last name"
 
     if not all(part.isalpha() for part in parts):
         return "Name should only contain letters and spaces."
@@ -54,19 +58,24 @@ def validate_full_name(name):
 def customer_flow():
     cursor.execute("SELECT customer_id, full_name FROM customers")
     customers = cursor.fetchall()
-
+    
     customer_lookup = {full_name: customer_id for customer_id, full_name in customers}
+    customer_lookup["Quit"] = 0
+    list_of_options = (list(customer_lookup.keys()))
 
     selected_name = questionary.autocomplete(
         "What is your full name?",
-        choices=list(customer_lookup.keys()),
+        choices=list_of_options,
         validate=validate_full_name,
     ).ask()
-
+    selected_name = str(selected_name) # unnecessary but helps with type hinting
     selected_name = selected_name.strip().title()
 
     if selected_name in customer_lookup:
         return customer_lookup[selected_name]
+
+    if selected_name == "Quit":
+        sys.exit(0)
 
     cursor.execute("INSERT INTO customers (full_name) VALUES (?)", (selected_name,))
     conn.commit()
