@@ -57,10 +57,9 @@ def tui() -> None:
     )
     user = user_type()
     if user == "Admin":
-        if Admin.auth():
-            pass
+        Admin.main()
     elif user == "Customer":
-        Customer.auth()
+        Customer().auth()
     else:
         print("Good bye!")
         sys.exit(0)

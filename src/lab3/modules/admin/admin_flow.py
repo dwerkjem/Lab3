@@ -1,10 +1,23 @@
 import questionary
+import sys
 
 
 class Admin:
-    def __init__(self):
-        pass
 
+    @staticmethod
+    def main() -> None:
+        authorized = Admin.auth()
+        if authorized:
+            option = Admin.admin_options()
+        else:
+            sys.exit(0)
+
+        if option == "Quit":
+            print("Bye admin! Come back soon!")
+            sys.exit(0)
+        print(option)
+
+    @staticmethod
     def auth() -> bool:
         """Authenticates the admin
 
@@ -23,5 +36,9 @@ class Admin:
             questionary.print("You are unauthorized", style="bold fg:ansired")
             return False
 
+    @staticmethod
     def admin_options():
-        pass
+        questionary.select(
+            "What you want to change?",
+            ["Rooms", "Customers", "Reservations", "Services", "Quit"],
+        ).ask()

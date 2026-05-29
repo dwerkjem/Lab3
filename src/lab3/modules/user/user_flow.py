@@ -11,7 +11,8 @@ class Customer:
     def __init__(self):
         """sets up `Customer`"""
 
-    def validate_full_name(self, name: str):
+    @staticmethod  # use this decorator to make independent of class https://www.geeksforgeeks.org/python/python-staticmethod/
+    def validate_full_name(name: str):
         if not name:
             return "Name cannot be empty."
 
