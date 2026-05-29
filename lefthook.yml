@@ -3,3 +3,6 @@ pre-commit:
     uv-pip-freeze:
       run: uv pip freeze > requirements.txt
       stage_fixed: true
+    pre-commit:
+      run: uv run pre-commit run --all-files
+      stage_fixed: true
