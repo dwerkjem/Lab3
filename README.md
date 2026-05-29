@@ -23,7 +23,7 @@ py -m pip install -r requirements.txt
 #### Using uv (recommended)
 
 ```cmd
-uv run tui
+uv run main
 ```
 
 #### Using Python
@@ -31,3 +31,6 @@ uv run tui
 ```cmd
 py src/lab3/main.py
 ```
+
+## Development
+

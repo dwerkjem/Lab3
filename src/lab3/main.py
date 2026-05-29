@@ -1,6 +1,6 @@
 """
 Name: Derek R. Neilson
-Description: CRUD-compliant event booking CLI for Fountain View Hall.
+Description: CRUD-compliant event booking TUI for Fountain View Hall.
 """
 
 from typing import Union
@@ -47,7 +47,7 @@ def user_type() -> str:
     ).ask()
 
 
-def tui() -> None:
+def main() -> None:
     questionary.print(
         "Welcome to Fountain View Hall's text user interface!",
         style="bold fg:ansigreen",
@@ -63,4 +63,4 @@ def tui() -> None:
 
 
 if __name__ == "__main__":
-    tui()
+    main()

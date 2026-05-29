@@ -90,7 +90,7 @@ def edit_rooms():
                 room_id,
             ),
         )
-
+        print(f"{old_name} updated to {new_name} with a capacity of {capacity} and a daily rate of {day_rate}")
         db.conn.commit()
     else:
         capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
@@ -110,5 +110,5 @@ def edit_rooms():
                 day_rate_cents,
             ),
         )
-
+        print(f"Room made {room_name} with capacity of {capacity} and a daily rate of {day_rate}")
         db.commit()

@@ -22,7 +22,7 @@ dev = [
 ]
 
 [project.scripts]
-tui = "lab3.main:tui"
+main = "lab3.main:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/lab3"]
