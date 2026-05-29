@@ -13,7 +13,7 @@ import questionary
 from pathlib import Path
 from lab3.modules import crud
 from lab3.modules.admin.admin_flow import Admin
-from lab3.modules.user.use_flow import Customer
+from lab3.modules.user.user_flow import Customer
 
 BASE_DIR = Path(__file__).parent
 ROOT_DIR = BASE_DIR.parent.parent
@@ -25,8 +25,6 @@ db_path = data_dir / "fountainViewHall.db"
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
-
-Customer = Customer(cursor, conn)
 
 
 def run_sql_file(sql_file: Union[str, bytes, os.PathLike]):

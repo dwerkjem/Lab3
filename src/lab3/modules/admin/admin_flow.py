@@ -22,3 +22,6 @@ class Admin:
         else:
             questionary.print("You are unauthorized", style="bold fg:ansired")
             return False
+
+    def admin_options():
+        pass
