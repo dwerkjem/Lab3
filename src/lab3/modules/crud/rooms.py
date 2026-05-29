@@ -27,10 +27,7 @@ def _edit_room_validator(existing_room_names: list[str], current_name: str):
     return validator
 
 def edit_rooms():
-    ID_FIELD = "room_id"
-    NAME_FIELD = "name"
-    TABLE_FIELD = "rooms"
-    db.cursor.execute(f"SELECT {ID_FIELD}, {NAME_FIELD} FROM {TABLE_FIELD}")
+    db.cursor.execute(f"SELECT room_id, name FROM rooms")
     room_list = db.cursor.fetchall()
     room_names = [name for _, name in room_list]
     room_name: str = crud.chose_autocomplete_or_text_prompt(
@@ -101,7 +98,7 @@ def edit_rooms():
         day_rate_cents = int(Decimal(day_rate) * 100)
         db.cursor.execute(
             f"""
-            INSERT INTO {TABLE_FIELD} (name, capacity, day_rate_cents)
+            INSERT INTO rooms (name, capacity, day_rate_cents)
             VALUES (?, ?, ?)
             """,
             (

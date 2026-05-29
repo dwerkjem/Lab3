@@ -3,7 +3,8 @@ import questionary
 import re
 from lab3.modules.crud.crud import CRUD
 from lab3.modules.crud.database import Database
-from lab3.modules.crud.user_crud import edit_customer
+from lab3.modules.crud.user import edit_customer
+from lab3.modules.crud.reservations import edit_reservations
 
 db = Database()
 
@@ -13,10 +14,10 @@ class Customer:
 
     def __init__(self):
         """sets up `Customer`"""
-        name_dict = self.auth()
-        self.user_name = name_dict["value"]
-        self.user_id = name_dict["id"]
-        self.user_existed = name_dict["existed"]
+        self.name_dict = self.auth()
+        self.user_name = self.name_dict["value"]
+        self.user_id = self.name_dict["id"]
+        self.user_existed = self.name_dict["existed"]
 
 
     @staticmethod  # use this decorator to make independent of class https://www.geeksforgeeks.org/python/python-staticmethod/
@@ -48,8 +49,8 @@ class Customer:
             "What is your full name?",
             self.validate_full_name,
         )
-    @staticmethod
-    def user_option():
+    
+    def user_options(self):
         return questionary.select(
             "What would you like to do?",
             [
@@ -64,12 +65,14 @@ class Customer:
         else:
             print((f"Thank you for registering {self.user_name}"))
         
-        option = self.user_option()
+        option = self.user_options()
         if option == "Quit":
             print("Good bye!")
             sys.exit(0)
         elif option == "Edit Profile":
             edit_customer(self.user_id, self.user_name)
+        elif option == "Make Reservation or Edit Reservations":
+            edit_reservations(self.name_dict)
             
 
 if __name__ == "__main__":
