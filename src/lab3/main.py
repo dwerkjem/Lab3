@@ -1,6 +1,8 @@
 """CRUD-compliant event booking CLI for Fountain View Hall."""
 
 import datetime
+from typing import Union
+import os
 import holidays
 import sys
 import sqlite3
@@ -11,7 +13,7 @@ from .modules.admin import admin_flow
 
 BASE_DIR = Path(__file__).parent
 ROOT_DIR = BASE_DIR.parent.parent
-schema_path = BASE_DIR / "sql/schema.sql"
+
 
 data_dir = ROOT_DIR / "data"
 
@@ -20,13 +22,27 @@ db_path = data_dir / "fountainViewHall.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-cursor.executescript(schema_path.read_text())
+
+def run_sql_file(sql_file: Union[str, bytes, os.PathLike]):
+    """Runs an sql query from the src directory
+
+    Args:
+        sql_file (Union[str, bytes, os.PathLike]): The sql query to run
+    """
+    sql_file = ROOT_DIR / "src/lab3" / sql_file
+    cursor.executescript(sql_file.read_text())
+
+
+run_sql_file("sql/schema.sql")
+run_sql_file("sql/drop_quit.sql")
+
+
 conn.commit()
 
 
 def user_type() -> str:
     return questionary.select(
-        "What type of user are you?", choices=["Customer", "Admin"]
+        "What type of user are you?", choices=["Customer", "Admin", "Quit"]
     ).ask()
 
 
@@ -65,11 +81,6 @@ def customer_auth():
     ).ask()
     selected_name = str(selected_name)  # unnecessary but helps with type hinting
 
-    if (
-        selected_name is None
-    ):  # If a keyboard interrupt happens we need to exit so it doesn't push to the database.
-        sys.exit(1)
-
     selected_name = selected_name.strip().title()
 
     if selected_name == "Quit":
@@ -78,11 +89,14 @@ def customer_auth():
     if selected_name in customer_lookup:
         return customer_lookup[selected_name]
 
-    cursor.execute("INSERT INTO customers (full_name) VALUES (?)", (selected_name,))
-    conn.commit()
-    print(f"Welcome {selected_name}, your account has been created!")
+    if selected_name is not None:
+        cursor.execute("INSERT INTO customers (full_name) VALUES (?)", (selected_name,))
+        conn.commit()
+        print(f"Welcome {selected_name}, your account has been created!")
 
-    return cursor.lastrowid
+        return cursor.lastrowid
+    else:
+        sys.exit(1)
 
 
 def tui() -> None:
@@ -94,10 +108,12 @@ def tui() -> None:
     if user == "Admin":
         if admin_flow.Admin.auth():
             pass
-
-    else:
+    elif user == "Customer":
         customer_auth()
+    else:
+        print("Good bye!")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
-    tui()
+    pass
