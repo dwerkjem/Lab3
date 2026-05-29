@@ -40,39 +40,31 @@ def edit_rooms():
         return None
 
     if room_name in room_names:
-        db.cursor.execute(
-            """
-            SELECT room_id, name, capacity, day_rate_cents
-            FROM rooms
-            WHERE name = ?
-            """,
-            (room_name,),
-        )
-
-        row = db.cursor.fetchone()
-
-        if row is None:
-            return None
-
-        room_id, old_name, old_capacity, old_day_rate_cents = row
+        room = get_room_by_name(room_name)
+        room_id = room["id"]
+        old_day_rate_cents = room["day_rate_cents"]
+        old_capacity = room["capacity"]
+        old_name = room["name"]
         old_day_rate = str(Decimal(old_day_rate_cents) / 100)
         new_name = questionary.text(
             f"What is the new name for {room_name} leave unchanged to keep as is?",
-            room_name,
-            _edit_room_validator(room_names, room_name),
+            default=room_name,
+            validate=_edit_room_validator(room_names, room_name),
         ).ask()
 
         new_capacity = questionary.text(
             f"What is the capacity of {room_name} leave unchanged to keep as is?",
-            str(old_capacity),
-            crud.integer_validator,
+            default=str(old_capacity),
+            validate=crud.integer_validator,
         ).ask()
 
-        new_day_rate_cents = questionary.text(
-            f"What is the rate of {room_name}leave unchanged to keep as is?",
-            str(old_day_rate),
-            crud.dollar_validator,
+        new_day_rate = questionary.text(
+            f"What is the rate of {room_name} leave unchanged to keep as is?",
+            default=str(old_day_rate),
+            validate=crud.dollar_validator,
         ).ask()
+
+        new_day_rate_cents = int(Decimal(new_day_rate) * 100)
         new_day_rate_cents = int(Decimal(new_day_rate_cents) * 100)
         db.cursor.execute(
             """
@@ -90,7 +82,7 @@ def edit_rooms():
             ),
         )
         print(
-            f"{old_name} updated to {new_name} with a capacity of {capacity} and a daily rate of {day_rate}"
+            f"{old_name} updated to {new_name} with a capacity of {new_capacity} and a daily rate of {new_day_rate}"
         )
         db.conn.commit()
     else:
@@ -115,3 +107,24 @@ def edit_rooms():
             f"Room made {room_name} with capacity of {capacity} and a daily rate of {day_rate}"
         )
         db.commit()
+
+
+def get_room_by_name(room_name: str) -> dict[str, str | int] | None:
+    db.cursor.execute(
+        """
+            SELECT room_id, name, capacity, day_rate_cents
+            FROM rooms
+            WHERE name = ?
+            """,
+        (room_name,),
+    )
+    row = db.cursor.fetchone()
+    if row is None:
+        return None
+    room_id, name, capacity, day_rate_cents = row
+    return {
+        "id": room_id,
+        "name": name,
+        "capacity": capacity,
+        "day_rate_cents": day_rate_cents,
+    }

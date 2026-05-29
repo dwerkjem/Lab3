@@ -19,7 +19,7 @@ def edit_reservations(name_dict: dict):
     if reservation_list == []:
         # make new reservation
         if room_names != []:
-            get_room_id(room_names, user_name)
+            print(get_room_id(room_names, user_name))
 
 
 def get_room_id(room_names, user_name):
