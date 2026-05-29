@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    uv-pip-freeze:
+      run: uv pip freeze > requirements.txt
+      stage_fixed: true
