@@ -97,7 +97,6 @@ def customer_flow():
 
 
 def tui() -> None:
-    crud.RoomsCRUD()
     questionary.print(
         "Welcome to Fountain View Hall's text user interface!",
         style="bold fg:ansigreen",
