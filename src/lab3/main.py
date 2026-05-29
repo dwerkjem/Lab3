@@ -3,15 +3,12 @@ Name: Derek R. Neilson
 Description: CRUD-compliant event booking CLI for Fountain View Hall.
 """
 
-import datetime
 from typing import Union
 import os
-import holidays
 import sys
 import sqlite3
 import questionary
 from pathlib import Path
-from lab3.modules import crud
 from lab3.modules.admin.admin_flow import Admin
 from lab3.modules.user.user_flow import Customer
 
