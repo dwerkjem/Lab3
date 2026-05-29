@@ -2,6 +2,7 @@ import sys
 import questionary
 from lab3.modules.crud.crud import CRUD
 from lab3.modules.crud.database import Database
+from lab3.modules.crud.user_crud import edit_customer
 
 db = Database()
 
@@ -45,13 +46,28 @@ class Customer:
             "What is your full name?",
             self.validate_full_name,
         )
-
-
+    @staticmethod
+    def user_option():
+        return questionary.select(
+            "What would you like to do?",
+            [
+                "Make Reservation or Edit Reservations",
+                "Edit Profile",
+                "Quit"
+            ]
+        ).ask()
     def main(self):
         if self.user_existed:
             print(f"Welcome back {self.user_name}")
         else:
             print((f"Thank you for registering {self.user_name}"))
+        
+        option = self.user_option()
+        if option == "Quit":
+            print("Good bye!")
+            sys.exit(0)
+        elif option == "Edit Profile":
+            edit_customer(self.user_id, self.user_name)
             
 
 if __name__ == "__main__":

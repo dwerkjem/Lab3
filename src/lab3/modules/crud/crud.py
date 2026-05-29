@@ -1,5 +1,4 @@
 import questionary
-import sqlite3
 from collections.abc import Callable
 from decimal import Decimal
 from .database import Database
