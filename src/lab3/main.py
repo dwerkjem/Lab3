@@ -33,7 +33,9 @@ def admin_flow():
     password = questionary.password(
         "Verify with a password\n  The password is `Password123` for demo purposes"
     ).ask()
-    if password == "Password123": # in production this would be encrypted and read from a .env file
+    if (
+        password == "Password123"
+    ):  # in production this would be encrypted and read from a .env file
         questionary.print("Welcome Admin", style="bold fg:ansigreen")
     else:
         questionary.print("You are unauthorized", style="bold fg:ansired")
@@ -45,9 +47,11 @@ def validate_full_name(name):
 
     parts = name.strip().split()
 
-    if len(parts) < 2 and name.lower() != "quit": # quit can be typed to quit at any time
+    if (
+        len(parts) < 2 and name.lower() != "quit"
+    ):  # quit can be typed to quit at any time
         return "Please enter at least a first and last name."
-    
+
     if len(parts) > 3:
         return "Please only enter a first, (optional) middle, and a last name"
 
@@ -60,28 +64,34 @@ def validate_full_name(name):
 def customer_flow():
     cursor.execute("SELECT customer_id, full_name FROM customers")
     customers = cursor.fetchall()
-    
+
     customer_lookup = {full_name: customer_id for customer_id, full_name in customers}
     customer_lookup["Quit"] = 0
-    list_of_options = (list(customer_lookup.keys()))
+    list_of_options = list(customer_lookup.keys())
 
     selected_name = questionary.autocomplete(
         "What is your full name?",
         choices=list_of_options,
         validate=validate_full_name,
     ).ask()
-    selected_name = str(selected_name) # unnecessary but helps with type hinting
-    selected_name = selected_name.strip().title()
+    selected_name = str(selected_name)  # unnecessary but helps with type hinting
 
-    if selected_name in customer_lookup:
-        return customer_lookup[selected_name]
+    if (
+        selected_name is None
+    ):  # If a keyboard interrupt happens we need to exit so it doesn't push to the database.
+        sys.exit(1)
+
+    selected_name = selected_name.strip().title()
 
     if selected_name == "Quit":
         sys.exit(0)
 
+    if selected_name in customer_lookup:
+        return customer_lookup[selected_name]
+
     cursor.execute("INSERT INTO customers (full_name) VALUES (?)", (selected_name,))
     conn.commit()
-    print(f"Welcome {selected_name}, your acount has been created!")
+    print(f"Welcome {selected_name}, your account has been created!")
 
     return cursor.lastrowid
 
