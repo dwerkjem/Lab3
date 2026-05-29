@@ -6,11 +6,13 @@ import sys
 import sqlite3
 import questionary
 from pathlib import Path
+from .modules import crud
 
 BASE_DIR = Path(__file__).parent
+ROOT_DIR = BASE_DIR.parent.parent
 schema_path = BASE_DIR / "sql/schema.sql"
 
-data_dir = BASE_DIR.parent.parent / "data"
+data_dir =  ROOT_DIR / "data"
 
 db_path = data_dir / "fountainViewHall.db"
 
