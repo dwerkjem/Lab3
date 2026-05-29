@@ -23,7 +23,7 @@ class Admin:
             print("Bye admin! Come back soon!")
             sys.exit(0)
         elif option == "Rooms":
-            rooms.edit_rooms() 
+            rooms.edit_rooms()
 
     @staticmethod
     def auth() -> bool:

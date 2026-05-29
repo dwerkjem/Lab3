@@ -5,26 +5,28 @@ import questionary
 from .crud import CRUD
 from lab3.modules.crud.database import Database
 
-
 db = Database()
 crud = CRUD(db)
+
 
 def _rooms_validator(room_name: str):
     if room_name != room_name.title():
         return "Please make title case."
     return True
 
+
 def _edit_room_validator(existing_room_names: list[str], current_name: str):
     def validator(room_name: str):
         if room_name != room_name.title():
             return "Please make title case."
-        
+
         if room_name != current_name and room_name in existing_room_names:
             return "That room already exists."
 
         return True
 
     return validator
+
 
 def edit_rooms():
     db.cursor.execute(f"SELECT room_id, name FROM rooms")
@@ -87,7 +89,9 @@ def edit_rooms():
                 room_id,
             ),
         )
-        print(f"{old_name} updated to {new_name} with a capacity of {capacity} and a daily rate of {day_rate}")
+        print(
+            f"{old_name} updated to {new_name} with a capacity of {capacity} and a daily rate of {day_rate}"
+        )
         db.conn.commit()
     else:
         capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
@@ -107,5 +111,7 @@ def edit_rooms():
                 day_rate_cents,
             ),
         )
-        print(f"Room made {room_name} with capacity of {capacity} and a daily rate of {day_rate}")
+        print(
+            f"Room made {room_name} with capacity of {capacity} and a daily rate of {day_rate}"
+        )
         db.commit()

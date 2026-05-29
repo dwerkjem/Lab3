@@ -10,6 +10,7 @@ db = Database()
 
 crud = CRUD(db)
 
+
 class Customer:
 
     def __init__(self):
@@ -18,7 +19,6 @@ class Customer:
         self.user_name = self.name_dict["value"]
         self.user_id = self.name_dict["id"]
         self.user_existed = self.name_dict["existed"]
-
 
     @staticmethod  # use this decorator to make independent of class https://www.geeksforgeeks.org/python/python-staticmethod/
     def validate_full_name(full_name: str) -> tuple[bool, str]:
@@ -49,22 +49,19 @@ class Customer:
             "What is your full name?",
             self.validate_full_name,
         )
-    
+
     def user_options(self):
         return questionary.select(
             "What would you like to do?",
-            [
-                "Make Reservation or Edit Reservations",
-                "Edit Profile",
-                "Quit"
-            ]
+            ["Make Reservation or Edit Reservations", "Edit Profile", "Quit"],
         ).ask()
+
     def main(self):
         if self.user_existed:
             print(f"Welcome back {self.user_name}")
         else:
             print((f"Thank you for registering {self.user_name}"))
-        
+
         option = self.user_options()
         if option == "Quit":
             print("Good bye!")
@@ -73,7 +70,7 @@ class Customer:
             edit_customer(self.user_id, self.user_name)
         elif option == "Make Reservation or Edit Reservations":
             edit_reservations(self.name_dict)
-            
+
 
 if __name__ == "__main__":
     Customer().main()

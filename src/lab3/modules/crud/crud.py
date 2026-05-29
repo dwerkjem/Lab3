@@ -3,6 +3,7 @@ from collections.abc import Callable
 from decimal import Decimal
 from .database import Database
 
+
 class CRUD:
     def __init__(self, db):
         self.db = db
@@ -23,10 +24,6 @@ class CRUD:
             return "At most 2 decimal places"
 
         return True
-
-
-
-    
 
     @staticmethod
     def integer_validator(integer_to_validate: str):
