@@ -2,13 +2,13 @@ import questionary
 import sqlite3
 from collections.abc import Callable
 from decimal import Decimal
-
+from .database import Database
 
 class CRUD:
-    def __init__(self, db_path: str):
-        self.db_path = db_path
-        self.conn = sqlite3.connect(db_path)
-        self.cursor = self.conn.cursor()
+    def __init__(self, db):
+        self.db = db
+        self.conn = db.conn
+        self.cursor = db.cursor
 
     @staticmethod
     def dollar_validator(dollars: str):
@@ -31,18 +31,7 @@ class CRUD:
             return "Please make title case."
         return True
 
-    @staticmethod
-    def _edit_room_validator(existing_room_names: list[str], current_name: str):
-        def validator(room_name: str):
-            if room_name != room_name.title():
-                return "Please make title case."
-
-            if room_name != current_name and room_name in existing_room_names:
-                return "That room already exists."
-
-            return True
-
-        return validator
+    
 
     @staticmethod
     def integer_validator(integer_to_validate: str):
@@ -53,93 +42,6 @@ class CRUD:
         if value > 1000000:
             return "Can not be above one million"
         return True
-
-    def edit_rooms(self):
-        ID_FIELD = "room_id"
-        NAME_FIELD = "name"
-        TABLE_FIELD = "rooms"
-        self.cursor.execute(f"SELECT {ID_FIELD}, {NAME_FIELD} FROM {TABLE_FIELD}")
-        room_list = self.cursor.fetchall()
-        room_names = [name for _, name in room_list]
-        room_name: str = self.chose_autocomplete_or_text_prompt(
-            "What room do you want to edit/create?", self._rooms_validator, room_names
-        )
-
-        if room_name is None:
-            return None
-
-        if room_name in room_names:
-            self.cursor.execute(
-                """
-                SELECT room_id, name, capacity, day_rate_cents
-                FROM rooms
-                WHERE name = ?
-                """,
-                (room_name,),
-            )
-
-            row = self.cursor.fetchone()
-
-            if row is None:
-                return None
-
-            room_id, old_name, old_capacity, old_day_rate_cents = row
-            old_day_rate = str(Decimal(old_day_rate_cents) / 100)
-            new_name = questionary.text(
-                f"What is the new name for {room_name} leave unchanged to keep as is?",
-                room_name,
-                self._edit_room_validator(room_names, room_name),
-            ).ask()
-
-            new_capacity = questionary.text(
-                f"What is the capacity of {room_name} leave unchanged to keep as is?",
-                str(old_capacity),
-                self.integer_validator,
-            ).ask()
-
-            new_day_rate_cents = questionary.text(
-                f"What is the rate of {room_name}leave unchanged to keep as is?",
-                str(old_day_rate),
-                self.dollar_validator,
-            ).ask()
-            new_day_rate_cents = int(Decimal(new_day_rate_cents) * 100)
-            self.cursor.execute(
-                """
-                UPDATE rooms
-                SET name = ?,
-                    capacity = ?,
-                    day_rate_cents = ?
-                WHERE room_id = ?
-                """,
-                (
-                    new_name,
-                    new_capacity,
-                    new_day_rate_cents,
-                    room_id,
-                ),
-            )
-
-            self.conn.commit()
-        else:
-            capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
-            day_rate = questionary.text(
-                f"What is the rate of {room_name}?", "139.99", self.dollar_validator
-            ).ask()
-
-            day_rate_cents = int(Decimal(day_rate) * 100)
-            self.cursor.execute(
-                f"""
-                INSERT INTO {TABLE_FIELD} (name, capacity, day_rate_cents)
-                VALUES (?, ?, ?)
-                """,
-                (
-                    room_name,
-                    capacity,
-                    day_rate_cents,
-                ),
-            )
-
-            self.conn.commit()
 
     @staticmethod
     def chose_autocomplete_or_text_prompt(
