@@ -1,8 +1,7 @@
 import questionary
 import sqlite3
 from collections.abc import Callable
-
-from typing import Any
+from decimal import Decimal
 
 
 class CRUD:
@@ -11,10 +10,77 @@ class CRUD:
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
 
-    def create_room(self, room_name: str, capacity: int, day_rate_cents: int):
-        CRUD.make_or_select_existing_autocomplete(
-            self,
+    @staticmethod
+    def dollar_validator(dollars: str):
+        try:
+            value = Decimal(dollars)
+        except Exception:
+            return "Only type numbers"
+
+        if value < 0:
+            return "Enter a positive amount"
+
+        if abs(value.as_tuple().exponent) > 2:
+            return "At most 2 decimal places"
+
+        return True
+
+    def _rooms_validator(room_name: str):
+        if room_name != room_name.title():
+            return "Please make title case."
+        return True
+
+    def edit_rooms(self):
+        ID_FIELD = "room_id"
+        NAME_FIELD = "name"
+        TABLE_FIELD = "rooms"
+        self.cursor.execute(f"SELECT {ID_FIELD}, {NAME_FIELD} FROM {TABLE_FIELD}")
+        room_list = self.cursor.fetchall()
+        room_name = self.chose_autocomplete_or_text_prompt(
+            "What room do you want to edit/create?", CRUD._rooms_validator, room_list
         )
+
+        if room_name is None:
+            return None
+
+        room_name = room_name
+        capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
+        day_rate = questionary.text(
+            f"What is the rate of {room_name}?", "139.99", CRUD.dollar_validator
+        ).ask()
+
+        day_rate_cents = int(Decimal(day_rate) * 100)
+        self.cursor.execute(
+            f"""
+            UPDATE {TABLE_FIELD}
+            SET capacity = ?, day_rate_cents = ?
+            WHERE {ID_FIELD} = ?
+            """,
+            (
+                capacity,
+                day_rate_cents,
+            ),
+        )
+
+        self.conn.commit()
+
+    @staticmethod
+    def chose_autocomplete_or_text_prompt(
+        autocomplete_prompt: str,
+        validator: Callable,
+        list_of_options: list[str] | None = None,
+    ):
+        if list_of_options:
+            return questionary.autocomplete(
+                autocomplete_prompt,
+                choices=list_of_options,
+                validate=validator,
+            ).ask()
+
+        return questionary.text(
+            autocomplete_prompt,
+            validate=validator,
+        ).ask()
 
     def make_or_select_existing_autocomplete(
         self,
@@ -24,17 +90,29 @@ class CRUD:
         autocomplete_prompt: str,
         validator: Callable,
     ) -> dict[str, str | bool] | None:
-        """Asks for a input and autocompletes based on whether it exists if it dose it selects it and returns a dictionary with its name and whether it existed or not in `"value"` and `"existed"` respectively
+        """Prompts the user for a value using autocomplete. If the value already
+        exists in the specified table, it is selected; otherwise, it is inserted.
+
+        Returns a dictionary containing the selected value, whether it already
+        existed.
 
         Args:
-            id_col (str): What the id is called in the data base
-            row_col (str): What value are you searching for.
-            table (str): In what table are you searching.
-            # autocomplete_prompt (str): What should the prompt be.
-            validator (Callable): A Validator function that must take 1 positional argument that is to be validated and return a str if invalid and a bool of True if valid.
+            id_col (str): Name of the ID column in the table.
+            row_col (str): Name of the column being searched and inserted into.
+            table (str): Name of the table to search.
+            autocomplete_prompt (str): Prompt displayed to the user.
+            validator (Callable): Validation function that accepts a single
+                argument and returns True if valid or an error message if invalid.
+            instant_push (bool): Whether to immediately commit inserts to the
+                database.
 
         Returns:
-            dict[str, Any | bool] | None: A dictionary with `"value"` as the inserted/selected value and a boolean value of whether it existed or not. it can also return `None` if invalid.
+            dict[str, str | bool | int] | None:
+                A dictionary containing:
+                    - "value": The selected or inserted value.
+                    - "existed": Whether the value already existed.
+                    - "id": The row ID .
+                Returns None if the prompt is cancelled.
         """
 
         query = f"SELECT {id_col}, {row_col} FROM {table}"
@@ -45,15 +123,17 @@ class CRUD:
         dictionary_val_id = {value: row_id for row_id, value in rows}
         list_of_options = list(dictionary_val_id.keys())
 
-        selected_row_col = questionary.autocomplete(
-            autocomplete_prompt,
-            choices=list_of_options,
-            validate=validator,
-        ).ask()
+        selected_row_col = CRUD.chose_autocomplete_or_text_prompt(
+            autocomplete_prompt, validator, list_of_options
+        )
 
         if selected_row_col in dictionary_val_id:
             # if it is in the data base
-            return {"value": selected_row_col, "existed": True}
+            return {
+                "value": selected_row_col,
+                "existed": True,
+                "id": dictionary_val_id[selected_row_col],
+            }
         elif selected_row_col is not None:
             # if it is not in the data base
             self.cursor.execute(
@@ -63,6 +143,10 @@ class CRUD:
             self.conn.commit()
             print(f"{selected_row_col}has been created!")
 
-            return {"value": selected_row_col, "existed": False}
+            return {
+                "value": selected_row_col,
+                "existed": False,
+                "id": self.cursor.lastrowid,
+            }
         else:
             print("None was queried.")
