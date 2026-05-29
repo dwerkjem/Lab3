@@ -5,7 +5,6 @@ import holidays
 import sys
 import sqlite3
 import questionary
-from questionary import Validator, ValidationError, prompt, Choice
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
@@ -59,7 +58,7 @@ def validate_full_name(name):
     return True
 
 
-def customer_flow():
+def customer_auth():
     cursor.execute("SELECT customer_id, full_name FROM customers")
     customers = cursor.fetchall()
 
