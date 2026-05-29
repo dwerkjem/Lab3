@@ -25,11 +25,7 @@ class CRUD:
 
         return True
 
-    @staticmethod
-    def _rooms_validator(room_name: str):
-        if room_name != room_name.title():
-            return "Please make title case."
-        return True
+
 
     
 
@@ -119,7 +115,7 @@ class CRUD:
                 f"INSERT INTO {table} ({row_col}) VALUES (?)",
                 (selected_row_col,),
             )
-            self.conn.commit()
+            self.db.commit()
             print(f"{selected_row_col}has been created!")
 
             return {

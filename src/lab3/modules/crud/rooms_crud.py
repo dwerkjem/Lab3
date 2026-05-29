@@ -1,8 +1,19 @@
-from .crud import CRUD 
+from decimal import Decimal
+import questionary
+
+
+from .crud import CRUD
 from lab3.modules.crud.database import Database
 
+
 db = Database()
-cursor = CRUD(db)
+crud = CRUD(db)
+
+def _rooms_validator(room_name: str):
+    if room_name != room_name.title():
+        return "Please make title case."
+    return True
+
 def _edit_room_validator(existing_room_names: list[str], current_name: str):
     def validator(room_name: str):
         if room_name != room_name.title():
@@ -19,18 +30,18 @@ def edit_rooms():
     ID_FIELD = "room_id"
     NAME_FIELD = "name"
     TABLE_FIELD = "rooms"
-    cursor.execute(f"SELECT {ID_FIELD}, {NAME_FIELD} FROM {TABLE_FIELD}")
-    room_list = self.cursor.fetchall()
+    db.cursor.execute(f"SELECT {ID_FIELD}, {NAME_FIELD} FROM {TABLE_FIELD}")
+    room_list = db.cursor.fetchall()
     room_names = [name for _, name in room_list]
-    room_name: str = chose_autocomplete_or_text_prompt(
-        "What room do you want to edit/create?", self._rooms_validator, room_names
+    room_name: str = crud.chose_autocomplete_or_text_prompt(
+        "What room do you want to edit/create?", _rooms_validator, room_names
     )
 
     if room_name is None:
         return None
 
     if room_name in room_names:
-        self.cursor.execute(
+        db.cursor.execute(
             """
             SELECT room_id, name, capacity, day_rate_cents
             FROM rooms
@@ -39,7 +50,7 @@ def edit_rooms():
             (room_name,),
         )
 
-        row = self.cursor.fetchone()
+        row = db.cursor.fetchone()
 
         if row is None:
             return None
@@ -49,22 +60,22 @@ def edit_rooms():
         new_name = questionary.text(
             f"What is the new name for {room_name} leave unchanged to keep as is?",
             room_name,
-            self._edit_room_validator(room_names, room_name),
+            _edit_room_validator(room_names, room_name),
         ).ask()
 
         new_capacity = questionary.text(
             f"What is the capacity of {room_name} leave unchanged to keep as is?",
             str(old_capacity),
-            self.integer_validator,
+            crud.integer_validator,
         ).ask()
 
         new_day_rate_cents = questionary.text(
             f"What is the rate of {room_name}leave unchanged to keep as is?",
             str(old_day_rate),
-            self.dollar_validator,
+            crud.dollar_validator,
         ).ask()
         new_day_rate_cents = int(Decimal(new_day_rate_cents) * 100)
-        self.cursor.execute(
+        db.cursor.execute(
             """
             UPDATE rooms
             SET name = ?,
@@ -80,15 +91,15 @@ def edit_rooms():
             ),
         )
 
-        self.conn.commit()
+        db.conn.commit()
     else:
         capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
         day_rate = questionary.text(
-            f"What is the rate of {room_name}?", "139.99", self.dollar_validator
+            f"What is the rate of {room_name}?", "139.99", crud.dollar_validator
         ).ask()
 
         day_rate_cents = int(Decimal(day_rate) * 100)
-        self.cursor.execute(
+        db.cursor.execute(
             f"""
             INSERT INTO {TABLE_FIELD} (name, capacity, day_rate_cents)
             VALUES (?, ?, ?)
@@ -100,4 +111,4 @@ def edit_rooms():
             ),
         )
 
-        self.conn.commit()
+        db.commit()

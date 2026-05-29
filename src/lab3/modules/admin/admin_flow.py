@@ -2,6 +2,7 @@ import questionary
 import sys
 from lab3.modules.crud.crud import CRUD
 from lab3.modules.crud.database import Database
+from lab3.modules.crud import rooms_crud
 
 db = Database()
 
@@ -22,7 +23,7 @@ class Admin:
             print("Bye admin! Come back soon!")
             sys.exit(0)
         elif option == "Rooms":
-            pass
+            rooms_crud.edit_rooms() 
 
     @staticmethod
     def auth() -> bool:
