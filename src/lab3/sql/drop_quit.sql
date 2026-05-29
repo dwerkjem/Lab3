@@ -1,2 +1,2 @@
 DELETE FROM customers
-WHERE customer_id = 5;
+WHERE full_name IN ('None', 'Quit');
