@@ -7,17 +7,19 @@ import sqlite3
 import questionary
 from pathlib import Path
 from .modules import crud
+from .modules.admin import admin_flow
 
 BASE_DIR = Path(__file__).parent
 ROOT_DIR = BASE_DIR.parent.parent
 schema_path = BASE_DIR / "sql/schema.sql"
 
-data_dir =  ROOT_DIR / "data"
+data_dir = ROOT_DIR / "data"
 
 db_path = data_dir / "fountainViewHall.db"
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
+
 cursor.executescript(schema_path.read_text())
 conn.commit()
 
@@ -26,18 +28,6 @@ def user_type() -> str:
     return questionary.select(
         "What type of user are you?", choices=["Customer", "Admin"]
     ).ask()
-
-
-def admin_flow():
-    password = questionary.password(
-        "Verify with a password\n  The password is `Password123` for demo purposes"
-    ).ask()
-    if (
-        password == "Password123"
-    ):  # in production this would be encrypted and read from a .env file
-        questionary.print("Welcome Admin", style="bold fg:ansigreen")
-    else:
-        questionary.print("You are unauthorized", style="bold fg:ansired")
 
 
 def validate_full_name(name):
@@ -102,9 +92,11 @@ def tui() -> None:
     )
     user = user_type()
     if user == "Admin":
-        admin_flow()
+        if admin_flow.Admin.auth():
+            pass
+
     else:
-        customer_flow()
+        customer_auth()
 
 
 if __name__ == "__main__":
