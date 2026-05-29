@@ -1,5 +1,6 @@
 import sys
 import questionary
+import re
 from lab3.modules.crud.crud import CRUD
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.user_crud import edit_customer
@@ -19,22 +20,23 @@ class Customer:
 
 
     @staticmethod  # use this decorator to make independent of class https://www.geeksforgeeks.org/python/python-staticmethod/
-    def validate_full_name(name: str):
-        if not name:
-            return "Name cannot be empty."
+    def validate_full_name(full_name: str) -> tuple[bool, str]:
+        words = full_name.strip().split()
 
-        parts = name.strip().split()
+        if len(words) < 2:
+            return "Name must have at least two words."
 
-        if (
-            len(parts) < 2 and name.lower() != "quit"
-        ):  # quit can be typed to quit at any time
-            return "Please enter at least a first and last name."
+        first_name = words[0]
 
-        if len(parts) > 3:
-            return "Please only enter a first, (optional) middle, and a last name"
+        if first_name.endswith("."):
+            return "First name cannot end in a period."
 
-        if not all(part.isalpha() for part in parts):
-            return "Name should only contain letters and spaces."
+        if not re.fullmatch(r"[A-Za-z.]+", full_name.replace(" ", "")):
+            return "Name can only contain letters, spaces, and periods."
+
+        for word in words:
+            if not re.fullmatch(r"[A-Za-z.]+", word):
+                return f"'{word}' contains invalid characters."
 
         return True
 

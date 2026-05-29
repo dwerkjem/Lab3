@@ -115,7 +115,7 @@ class CRUD:
                 (selected_row_col,),
             )
             self.db.commit()
-            print(f"{selected_row_col}has been created!")
+            print(f"{selected_row_col} has been created!")
 
             return {
                 "value": selected_row_col,

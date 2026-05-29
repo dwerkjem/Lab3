@@ -18,7 +18,7 @@ def _edit_room_validator(existing_room_names: list[str], current_name: str):
     def validator(room_name: str):
         if room_name != room_name.title():
             return "Please make title case."
-
+        
         if room_name != current_name and room_name in existing_room_names:
             return "That room already exists."
 
