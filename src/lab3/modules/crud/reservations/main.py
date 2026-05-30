@@ -118,15 +118,49 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
     if selected_event in (None, "Quit"):
         return
 
-    event_name = set_event_name()
-    event_type = set_event_type()
-    room = _get_room(room_names, user_name)
+    reservation_id = reservation_options[selected_event]
+
+    db.cursor.execute(
+        """
+        SELECT
+            room_id,
+            attendees,
+            event_name,
+            event_type,
+            start_datetime,
+            end_datetime,
+            notes
+        FROM reservations
+        WHERE reservation_id = ?
+        """,
+        (reservation_id,),
+    )
+
+    current = db.cursor.fetchone()
+    (
+        room_id,
+        attendees,
+        event_name_default,
+        event_type_default,
+        start,
+        end,
+        notes_default,
+    ) = current
+    date_default = start if start == end else f"{start} {end}"
+
+    event_name = set_event_name(default=event_name_default)
+    event_type = set_event_type(default=event_type_default.title())
+    room = _get_room(room_names, user_name, default=_room_name_from_id(room_id))
 
     if event_name is None or event_type in (None, "Quit") or room is None:
         return
 
-    date_string = set_date(room["id"])
-    attendees_count = get_attendees_count(crud.integer_validator)
+    date_string = set_date(room["id"], default=date_default)
+    attendees_count = get_attendees_count(
+        crud.integer_validator,
+        default=str(attendees),
+    )
+    notes = set_notes(default=notes_default or "")
 
     if date_string is None or attendees_count is None:
         return
@@ -153,9 +187,18 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
             event_type.lower(),
             start_datetime,
             end_datetime,
-            set_notes(),
-            reservation_options[selected_event],
+            notes,
+            reservation_id,
         ),
     )
 
     db.conn.commit()
+
+
+def _room_name_from_id(room_id):
+    db.cursor.execute(
+        "SELECT name FROM rooms WHERE room_id = ?",
+        (room_id,),
+    )
+    room = db.cursor.fetchone()
+    return room[0] if room else None
