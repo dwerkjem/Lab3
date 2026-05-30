@@ -1,8 +1,11 @@
 import questionary
 
 from lab3.modules.crud.database import Database
+from lab3.modules.crud.main import CRUD
 
 db = Database()
+
+crud = CRUD(db)
 
 
 def get_list_of_services():
@@ -38,3 +41,53 @@ def choose_services():
         ).ask()
         or []
     )
+
+
+def add_service():
+    name = questionary.text("Service name:").ask()
+    if not name:
+        return
+
+    description = questionary.text("Description:").ask()
+
+    cost_dollars = questionary.text(
+        "Cost in dollars:", validate=crud.dollar_validator
+    ).ask()
+    if not cost_dollars:
+        return
+
+    charge_by = questionary.select(
+        "Charge by:",
+        choices=[
+            "one time",
+            "daily",
+            "attendees",
+            "daily attendees",
+        ],
+    ).ask()
+
+    if not charge_by:
+        return
+
+    cost_cents = int(float(cost_dollars) * 100)
+
+    db.cursor.execute(
+        """
+        INSERT INTO services (
+            name,
+            description,
+            cost_cents,
+            charge_by
+        )
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            name,
+            description,
+            cost_cents,
+            charge_by,
+        ),
+    )
+
+    db.commit()
+    print(f"Added service: {name}")
