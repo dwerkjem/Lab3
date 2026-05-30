@@ -1,18 +1,6 @@
 import questionary
 
 from lab3.modules.crud.reservations.validators import validate_datetime
-from lab3.modules.crud.rooms import get_room_by_name
-
-
-def _get_room(room_names: list[str], user_name: str) -> dict[str, str | int] | None:
-    room_name = questionary.select(
-        f"Hello {user_name} please select a room", room_names
-    ).ask()
-
-    if room_name == "Quit" or room_name is None:
-        return None
-
-    return get_room_by_name(room_name)
 
 
 def set_notes():

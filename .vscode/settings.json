@@ -1,10 +1,13 @@
 {
-    "sqltools.connections": [
-        {
-            "previewLimit": 50,
-            "driver": "SQLite",
-            "database": "${workspaceFolder:Lab3}/data/fountainViewHall.db",
-            "name": "fountainViewHall"
-        }
-    ]
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "${workspaceFolder:Lab3}/data/fountainViewHall.db",
+      "name": "fountainViewHall"
+    }
+  ],
+  "git.showCommitInput": false,
+  "git.confirmSync": false,
+  "git.autofetch": false
 }
