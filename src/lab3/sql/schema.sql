@@ -1,6 +1,13 @@
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version TEXT PRIMARY KEY,
+    applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS customers (
     customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name TEXT NOT NULL
+    full_name TEXT NOT NULL UNIQUE,
+    auto_approval INTEGER NOT NULL DEFAULT 0,
+    is_deleted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS rooms (
@@ -32,8 +39,9 @@ CREATE TABLE IF NOT EXISTS services (
     name TEXT NOT NULL,
     description TEXT,
     cost_cents INTEGER NOT NULL,
-    charge_by TEXT NOT NULL DEFAULT 'one time'
-        CHECK (charge_by IN ('one time', 'daily', 'attendees'))
+   charge_by TEXT NOT NULL DEFAULT 'one time'
+    CHECK (charge_by IN ('one time', 'daily', 'attendees', 'daily attendees'))
+
 );
 
 CREATE TABLE IF NOT EXISTS reservation_services (

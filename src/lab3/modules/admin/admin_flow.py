@@ -10,6 +10,8 @@ db = Database()
 
 crud = CRUD(db)
 
+UNSECURE_PASSWORD = "pas"
+
 
 class Admin:
     @staticmethod
@@ -34,10 +36,10 @@ class Admin:
             bool: whether they are authorized or not.
         """
         password = questionary.password(
-            "Verify with a password\n  The password is `Password123` for demo purposes"
+            f"Verify with a password\n  The password is `{UNSECURE_PASSWORD}` for demo purposes"
         ).ask()
         if (
-            password == "Password123"
+            password == UNSECURE_PASSWORD
         ):  # in production this would be encrypted and read from a .env file
             questionary.print("Welcome Admin", style="bold fg:ansigreen")
             return True

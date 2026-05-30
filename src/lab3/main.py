@@ -37,7 +37,6 @@ def run_sql_file(sql_file: Union[str, bytes, os.PathLike]):
 
 
 run_sql_file("sql/schema.sql")
-run_sql_file("sql/drop_quit.sql")
 
 
 conn.commit()
