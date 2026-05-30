@@ -13,7 +13,19 @@ class Database:
     def fetchone(self, query: str, params: tuple = ()):
         self.cursor.execute(query, params)
         return self.cursor.fetchone()
-    
+
+    def fetch_all_dict(self, query: str, params: tuple = ()):
+        self.conn.row_factory = sqlite3.Row
+        cursor = self.conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchall()
+
+    def fetch_one_dict(self, query: str, params: tuple = ()):
+        self.conn.row_factory = sqlite3.Row
+        cursor = self.conn.cursor()
+        cursor.execute(query, params)
+        return cursor.fetchone()
+
     def commit(self):
         self.conn.commit()
 
