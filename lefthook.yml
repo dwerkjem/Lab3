@@ -4,5 +4,5 @@ pre-commit:
       run: uv pip freeze > requirements.txt
       stage_fixed: true
     pre-commit:
-      run: NO_COLOR=1 uv run pre-commit run
+      run: uv run pre-commit run
       stage_fixed: true

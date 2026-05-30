@@ -6,7 +6,7 @@ db = Database()
 
 
 def _is_reserved_date_in_range(room_id: str, start_date: str, end_date: str):
-    db.cursor.execute(
+    reserved_dates = db.fetchall(
         """
         SELECT start_datetime, end_datetime
         FROM reservations
@@ -18,8 +18,6 @@ def _is_reserved_date_in_range(room_id: str, start_date: str, end_date: str):
         (int(room_id), end_date, start_date),
     )  # This woks only because it is YYYY-MM-DD and
     # therefore there in the right order and can be compared like this.
-
-    reserved_dates = db.cursor.fetchall()
 
     if not reserved_dates:
         return False

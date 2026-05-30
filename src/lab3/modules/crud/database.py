@@ -6,6 +6,10 @@ class Database:
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
 
+    def fetchall(self, query: str, params: tuple = ()):
+        self.cursor.execute(query, params)
+        return self.cursor.fetchall()
+
     def commit(self):
         self.conn.commit()
 

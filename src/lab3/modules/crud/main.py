@@ -86,10 +86,7 @@ class CRUD:
                 Returns None if the prompt is cancelled.
         """
 
-        query = f"SELECT {id_col}, {row_col} FROM {table}"
-        self.cursor.execute(query)
-
-        rows = self.cursor.fetchall()
+        rows = self.db.fetchall(f"SELECT {id_col}, {row_col} FROM {table}")
 
         dictionary_val_id = {value: row_id for row_id, value in rows}
         list_of_options = list(dictionary_val_id.keys())

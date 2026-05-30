@@ -1,4 +1,5 @@
 import re
+from typing import Callable, Literal
 
 import questionary
 
@@ -7,7 +8,9 @@ from .database import Database
 db = Database()
 
 
-def edit_validate_name(names_list: list[str], current_name: str):
+def edit_validate_name(
+    names_list: list[str], current_name: str
+) -> Callable[..., str | Literal[True]]:
     def validate(full_name: str):
         full_name = full_name.strip()
         words = full_name.split()
@@ -35,14 +38,15 @@ def edit_validate_name(names_list: list[str], current_name: str):
     return validate
 
 
-def edit_customer(customer_id: str, customer_name: str):
-    db.cursor.execute("""
+def edit_customer(customer_id: str, customer_name: str) -> None:
+    names_list = [
+        row[0]
+        for row in db.fetchall("""
         SELECT full_name
         FROM customers
         ORDER BY full_name
     """)
-
-    names_list = [row[0] for row in db.cursor.fetchall()]
+    ]
 
     new_customer_name = questionary.text(
         "What would you like to change the name to?",

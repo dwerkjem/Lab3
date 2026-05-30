@@ -122,7 +122,7 @@ class AdminEditCustomer:
             """,
             (self.customer_id,),
         )
-        reservation_ids = [row[0] for row in db.cursor.fetchall()]
+        reservation_ids = [row[0] for row in db.fetchall()]
 
         for reservation_id in reservation_ids:
             db.cursor.execute(
@@ -154,12 +154,12 @@ class AdminEditCustomer:
         print(f"{self.customer_name} was deleted.")
 
     def _get_customer_names(self):
-        db.cursor.execute("""
+        query = """
             SELECT full_name
             FROM customers
             ORDER BY full_name
-            """)
-        return [row[0] for row in db.cursor.fetchall()]
+            """
+        return [row[0] for row in db.db.fetchall(query)]
 
     def _edit_validate_name(self, names_list: list[str], current_name: str = ""):
         def validate(full_name: str):
@@ -187,13 +187,11 @@ class AdminEditCustomer:
         return validate
 
     def _select_customer(self):
-        db.cursor.execute("""
+        customers = db.fetchall("""
             SELECT customer_id, full_name
             FROM customers
             ORDER BY full_name
             """)
-
-        customers = db.cursor.fetchall()
 
         if not customers:
             print("No customers found.")

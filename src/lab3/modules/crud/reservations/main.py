@@ -24,8 +24,7 @@ def _split_dates(date_string):
 
 
 def edit_reservations(name_dict: dict):
-    db.cursor.execute("SELECT room_id, name FROM rooms")
-    room_list = db.cursor.fetchall()
+    room_list = db.fetchall("SELECT room_id, name FROM rooms")
 
     if not room_list:
         print("No rooms are created. Contact admin!")
@@ -35,7 +34,7 @@ def edit_reservations(name_dict: dict):
     user_name = name_dict["value"]
     room_names = ["Quit"] + [name for _, name in room_list]
 
-    db.cursor.execute(
+    reservation_list = db.fetchall(
         """
         SELECT reservation_id, event_name
         FROM reservations
@@ -43,7 +42,6 @@ def edit_reservations(name_dict: dict):
         """,
         (customer_id,),
     )
-    reservation_list = db.cursor.fetchall()
 
     if not reservation_list:
         _setup(customer_id, room_names, user_name)
