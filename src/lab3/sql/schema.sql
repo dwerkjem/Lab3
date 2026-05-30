@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     room_id INTEGER NOT NULL,
     attendees INTEGER NOT NULL,
     event_name TEXT NOT NULL,
+    event_type TEXT NOT NULL DEFAULT 'other',
     start_datetime TEXT NOT NULL,
     end_datetime TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending approval'

@@ -8,6 +8,13 @@ def set_notes():
     return note
 
 
+def set_event_type():
+    return questionary.select(
+        "What type of event is this?",
+        ["Wedding", "Meeting", "Party", "Conference", "Other", "Quit"],
+    ).ask()
+
+
 def set_date(room_id) -> str | None:
     instruction_text = """Use format `start-date end-date`, where both dates are in `YYYY-MM-DD`
 format and separated by a space.
