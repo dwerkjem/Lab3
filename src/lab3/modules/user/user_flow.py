@@ -12,7 +12,6 @@ crud = CRUD(db)
 
 
 class Customer:
-
     def __init__(self):
         """sets up `Customer`"""
         self.name_dict = self.auth()

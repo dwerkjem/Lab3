@@ -1,7 +1,6 @@
 import questionary
 from collections.abc import Callable
 from decimal import Decimal
-from .database import Database
 
 
 class CRUD:

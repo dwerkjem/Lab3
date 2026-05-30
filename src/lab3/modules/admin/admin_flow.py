@@ -10,7 +10,6 @@ crud = CRUD(db)
 
 
 class Admin:
-
     @staticmethod
     def main() -> None:
         authorized = Admin.auth()
