@@ -157,7 +157,6 @@ class AdminEditCustomer:
         db.cursor.execute("""
             SELECT full_name
             FROM customers
-            WHERE is_deleted = 0
             ORDER BY full_name
             """)
         return [row[0] for row in db.cursor.fetchall()]
@@ -191,7 +190,6 @@ class AdminEditCustomer:
         db.cursor.execute("""
             SELECT customer_id, full_name
             FROM customers
-            WHERE is_deleted = 0
             ORDER BY full_name
             """)
 
