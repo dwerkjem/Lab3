@@ -1,8 +1,10 @@
-import questionary
 import sys
-from lab3.modules.crud.main import CRUD
-from lab3.modules.crud.database import Database
+
+import questionary
+
 from lab3.modules.crud import rooms
+from lab3.modules.crud.database import Database
+from lab3.modules.crud.main import CRUD
 
 db = Database()
 

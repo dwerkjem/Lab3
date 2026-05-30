@@ -1,6 +1,7 @@
-import questionary
 from collections.abc import Callable
 from decimal import Decimal
+
+import questionary
 
 
 class CRUD:

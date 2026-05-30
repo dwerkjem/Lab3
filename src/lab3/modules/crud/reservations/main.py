@@ -1,5 +1,9 @@
+import sys
+
 import questionary
+
 from lab3.modules.crud.database import Database
+from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.reservations.values import (
     _get_room,
     get_attendees_count,
@@ -7,9 +11,6 @@ from lab3.modules.crud.reservations.values import (
     set_event_name,
     set_notes,
 )
-from lab3.modules.crud.main import CRUD
-
-import sys
 
 db = Database()
 

@@ -1,8 +1,7 @@
+import questionary
+
 from lab3.modules.crud.reservations.validators import validate_datetime
 from lab3.modules.crud.rooms import get_room_by_name
-
-
-import questionary
 
 
 def _get_room(room_names: list[str], user_name: str) -> dict[str, str | int] | None:

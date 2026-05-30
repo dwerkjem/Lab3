@@ -1,9 +1,9 @@
 from decimal import Decimal
+
 import questionary
 
-
-from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.database import Database
+from lab3.modules.crud.main import CRUD
 
 db = Database()
 crud = CRUD(db)

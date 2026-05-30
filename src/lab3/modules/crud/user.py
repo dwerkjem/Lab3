@@ -1,6 +1,8 @@
-import questionary
-from .database import Database
 import re
+
+import questionary
+
+from .database import Database
 
 db = Database()
 
