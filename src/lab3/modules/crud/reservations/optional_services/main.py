@@ -7,6 +7,13 @@ db = Database()
 
 crud = CRUD(db)
 
+def edit_add_service():
+    service_name_dict = crud.make_or_select_existing_autocomplete(autocomplete_prompt="Chose a service ro add or edit.",id_col="service_id", row_col="name", table="services", validator=service_validator)
+    service_name = service_name_dict["value"]
+    if not service_name_dict["existed"]:
+        add_service(service_name)
+    else:
+        edit_service(service_name)
 
 def get_list_of_services():
     rows = db.fetchall("""
@@ -42,11 +49,13 @@ def choose_services():
         or []
     )
 
+def service_validator(service:str):
+    if service != service.title():
+        return "Make title case."
+    return True
 
-def add_service():
-    name = questionary.text("Service name:").ask()
-    if not name:
-        return
+
+def add_service(name:str):
 
     description = questionary.text("Description:").ask()
 
@@ -91,3 +100,80 @@ def add_service():
 
     db.commit()
     print(f"Added service: {name}")
+
+def edit_service(name: str):
+    service = db.fetchone(
+        """
+        SELECT service_id, name, description, cost_cents, charge_by
+        FROM services
+        WHERE name = ?
+        """,
+        (name,),
+    )
+
+    if not service:
+        print("Service not found.")
+        return
+
+    service_id = service[0]
+    old_name = service[1]
+    old_description = service[2] or ""
+    old_cost_cents = service[3]
+    old_charge_by = service[4]
+
+    new_name = questionary.text(
+        "Name:",
+        default=old_name,
+        validate=service_validator,
+    ).ask()
+    if not new_name:
+        return
+
+    description = questionary.text(
+        "Description:",
+        default=old_description,
+    ).ask()
+
+    cost_dollars = questionary.text(
+        "Cost in dollars:",
+        default=f"{old_cost_cents / 100:.2f}",
+        validate=crud.dollar_validator,
+    ).ask()
+    if not cost_dollars:
+        return
+
+    charge_by = questionary.select(
+        "Charge by:",
+        choices=[
+            "one time",
+            "daily",
+            "attendees",
+            "daily attendees",
+        ],
+        default=old_charge_by,
+    ).ask()
+    if not charge_by:
+        return
+
+    cost_cents = int(round(float(cost_dollars) * 100))
+
+    db.cursor.execute(
+        """
+        UPDATE services
+        SET name = ?,
+            description = ?,
+            cost_cents = ?,
+            charge_by = ?
+        WHERE service_id = ?
+        """,
+        (
+            new_name,
+            description,
+            cost_cents,
+            charge_by,
+            service_id,
+        ),
+    )
+
+    db.commit()
+    print(f"Updated service: {new_name}")

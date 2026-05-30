@@ -4,7 +4,7 @@ import questionary
 
 from lab3.modules.admin.customer_admin import AdminEditCustomer
 from lab3.modules.crud import rooms
-from lab3.modules.crud.reservations.optional_services.main import add_service
+from lab3.modules.crud.reservations.optional_services.main import edit_add_service
 
 UNSECURE_PASSWORD = "pas"
 
@@ -20,7 +20,7 @@ def main():
     elif option == "Rooms":
         rooms.edit_rooms()
     elif option == "Services":
-        add_service()
+        edit_add_service()
 
     else:
         print("Bye admin! Come back soon!")
