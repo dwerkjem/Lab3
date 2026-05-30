@@ -4,7 +4,7 @@ import re
 from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.user import edit_customer
-from lab3.modules.crud.reservations import edit_reservations
+from lab3.modules.crud.reservations.main import edit_reservations
 
 db = Database()
 
