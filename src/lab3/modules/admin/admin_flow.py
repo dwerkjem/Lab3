@@ -2,54 +2,44 @@ import sys
 
 import questionary
 
+from lab3.modules.admin.customer_admin import AdminEditCustomer
 from lab3.modules.crud import rooms
-from lab3.modules.crud.database import Database
-from lab3.modules.crud.main import CRUD
-
-db = Database()
-
-crud = CRUD(db)
 
 UNSECURE_PASSWORD = "pas"
 
 
-class Admin:
-    @staticmethod
-    def main() -> None:
-        authorized = Admin.auth()
-        if authorized:
-            option = Admin.admin_options()
-        else:
-            sys.exit(0)
+def main():
+    if not auth():
+        sys.exit(0)
 
-        if option == "Quit":
-            print("Bye admin! Come back soon!")
-            sys.exit(0)
-        elif option == "Rooms":
-            rooms.edit_rooms()
+    option = admin_options()
 
-    @staticmethod
-    def auth() -> bool:
-        """Authenticates the admin
+    if option == "Quit":
+        print("Bye admin! Come back soon!")
+        sys.exit(0)
 
-        Returns:
-            bool: whether they are authorized or not.
-        """
-        password = questionary.password(
-            f"Verify with a password\n  The password is `{UNSECURE_PASSWORD}` for demo purposes"
-        ).ask()
-        if (
-            password == UNSECURE_PASSWORD
-        ):  # in production this would be encrypted and read from a .env file
-            questionary.print("Welcome Admin", style="bold fg:ansigreen")
-            return True
-        else:
-            questionary.print("You are unauthorized", style="bold fg:ansired")
-            return False
+    if option == "Customers":
+        AdminEditCustomer().main()
+    elif option == "Rooms":
+        rooms.edit_rooms()
 
-    @staticmethod
-    def admin_options():
-        return questionary.select(
-            "What you want to change?",
-            ["Rooms", "Customers", "Reservations", "Services", "Quit"],
-        ).ask()
+
+def auth() -> bool:
+    password = questionary.password(
+        f"Verify with a password\n"
+        f"  The password is `{UNSECURE_PASSWORD}` for demo purposes"
+    ).ask()
+
+    if password == UNSECURE_PASSWORD:
+        questionary.print("Welcome Admin", style="bold fg:ansigreen")
+        return True
+
+    questionary.print("You are unauthorized", style="bold fg:ansired")
+    return False
+
+
+def admin_options():
+    return questionary.select(
+        "What do you want to change?",
+        ["Rooms", "Customers", "Reservations", "Services", "Quit"],
+    ).ask()

@@ -11,7 +11,7 @@ from typing import Union
 
 import questionary
 
-from lab3.modules.admin.admin_flow import Admin
+from lab3.modules.admin import admin_flow
 from lab3.modules.user.user_flow import Customer
 
 BASE_DIR = Path(__file__).parent
@@ -55,7 +55,7 @@ def main() -> None:
     )
     user = user_type()
     if user == "Admin":
-        Admin.main()
+        admin_flow.main()
     elif user == "Customer":
         Customer().main()
     else:

@@ -7,7 +7,7 @@ from .database import Database
 db = Database()
 
 
-def _edit_validate_name(names_list: list[str], current_name: str):
+def edit_validate_name(names_list: list[str], current_name: str):
     def validate(full_name: str):
         full_name = full_name.strip()
         words = full_name.split()
@@ -47,7 +47,7 @@ def edit_customer(customer_id: str, customer_name: str):
     new_customer_name = questionary.text(
         "What would you like to change the name to?",
         default=customer_name,
-        validate=_edit_validate_name(names_list, customer_name),
+        validate=edit_validate_name(names_list, customer_name),
     ).ask()
 
     db.cursor.execute(
