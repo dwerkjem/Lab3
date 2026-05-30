@@ -9,5 +9,8 @@
   ],
   "git.showCommitInput": false,
   "git.confirmSync": false,
-  "git.autofetch": false
+  "git.autofetch": false,
+  "cSpell.words": [
+    "AUTOINCREMENT"
+  ]
 }

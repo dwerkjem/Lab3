@@ -14,7 +14,7 @@ def set_notes(default=""):
     ).ask()
 
 
-def _get_room(room_names, user_name, default=None):
+def get_room(room_names, user_name, default=None):
     room_name = questionary.select(
         f"{user_name}, which room would you like to reserve?",
         room_names,
@@ -72,3 +72,12 @@ def get_attendees_count(integer_validator, default="30") -> str | None:
         default=default,
         validate=integer_validator,
     ).ask()
+
+
+def room_name_from_id(room_id):
+    db.cursor.execute(
+        "SELECT name FROM rooms WHERE room_id = ?",
+        (room_id,),
+    )
+    room = db.cursor.fetchone()
+    return room[0] if room else None

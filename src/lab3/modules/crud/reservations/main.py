@@ -5,8 +5,9 @@ import questionary
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.reservations.values import (
-    _get_room,
     get_attendees_count,
+    get_room,
+    room_name_from_id,
     set_date,
     set_event_name,
     set_event_type,
@@ -62,7 +63,7 @@ def edit_reservations(name_dict: dict):
 def _setup(customer_id, room_names, user_name):
     event_name = set_event_name()
     event_type = set_event_type()
-    room = _get_room(room_names, user_name)
+    room = get_room(room_names, user_name)
 
     if event_name is None or event_type in (None, "Quit") or room is None:
         sys.exit(0)
@@ -150,7 +151,7 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
 
     event_name = set_event_name(default=event_name_default)
     event_type = set_event_type(default=event_type_default.title())
-    room = _get_room(room_names, user_name, default=_room_name_from_id(room_id))
+    room = get_room(room_names, user_name, default=room_name_from_id(room_id))
 
     if event_name is None or event_type in (None, "Quit") or room is None:
         return
@@ -193,12 +194,3 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
     )
 
     db.conn.commit()
-
-
-def _room_name_from_id(room_id):
-    db.cursor.execute(
-        "SELECT name FROM rooms WHERE room_id = ?",
-        (room_id,),
-    )
-    room = db.cursor.fetchone()
-    return room[0] if room else None
