@@ -1,3 +1,10 @@
+"""
+Name: Derek R. Neilson
+Description: Admin and customer management of optional reservation services.
+"""
+
+from typing import Literal
+
 import questionary
 
 from lab3.modules.crud.database import Database
@@ -8,7 +15,10 @@ db = Database()
 crud = CRUD(db)
 
 
-def edit_add_service():
+def edit_add_service() -> None:
+    """Let an admin choose an existing service to edit or enter a new service to add."""
+
+    # Existing service names are used both for autocomplete and to decide add vs. edit.
     rows = db.fetchall("SELECT service_id, name FROM services")
     service_names = [name for _, name in rows]
 
@@ -18,6 +28,7 @@ def edit_add_service():
         service_names,
     )
 
+    # Exit if the admin cancels the prompt.
     if service_name is None:
         return
 
@@ -27,7 +38,8 @@ def edit_add_service():
         add_service(service_name)
 
 
-def get_list_of_services():
+def get_list_of_services() -> list[questionary.Choice]:
+    """Return service records formatted as Questionary choices."""
     rows = db.fetchall("""
         SELECT service_id, name, description, cost_cents, charge_by
         FROM services
@@ -36,7 +48,7 @@ def get_list_of_services():
 
     return [
         questionary.Choice(
-            title=(  # this will flatten to one line also convert cents to dollars
+            title=(  # Format each service as one display line and convert cents to dollars.
                 f"{row['name']} - ${row['cost_cents'] / 100:.2f} ({row['charge_by']}) "
                 f"{'| ' + row['description'] if row['description'] else ''}"
             ),
@@ -46,7 +58,14 @@ def get_list_of_services():
     ]
 
 
-def choose_services():
+def choose_services() -> list[int]:
+    """Prompt the user to choose optional services.
+
+    Returns:
+        list[int]: Selected service IDs, or an empty list if no services are
+        available or the prompt is cancelled.
+    """
+
     choices = get_list_of_services()
 
     if not choices:
@@ -58,17 +77,31 @@ def choose_services():
             "Choose services:",
             choices=choices,
         ).ask()
-        or []
+        or []  # Return an empty list if the user cancels without selecting services.
     )
 
 
-def service_validator(service: str):
+def service_validator(service: str) -> str | Literal[True]:
+    """Validate that a service name is entered in title case.
+
+    Args:
+        service (str): Service name entered by the user.
+
+    Returns:
+        str | bool: Error message if validation fails; otherwise True.
+    """
     if service != service.title():
         return "Make title case."
     return True
 
 
-def add_service(name: str):
+def add_service(name: str) -> None:
+    """Prompt for service details and add a new optional service.
+
+    Args:
+        name (str): Name of the service to add.
+    """
+
     description = questionary.text("Description:").ask()
 
     cost_dollars = questionary.text(
@@ -90,7 +123,8 @@ def add_service(name: str):
     if not charge_by:
         return
 
-    cost_cents = int(float(cost_dollars) * 100)
+    # Store money in cents to avoid floating-point rounding issues in the database.
+    cost_cents = int(round(float(cost_dollars) * 100))
 
     db.cursor.execute(
         """
@@ -114,7 +148,12 @@ def add_service(name: str):
     print(f"Added service: {name}")
 
 
-def edit_service(name: str):
+def edit_service(name: str) -> None:
+    """Edit an existing optional service.
+
+    Args:
+        name (str): Name of the service to edit.
+    """
     service = db.fetchone(
         """
         SELECT service_id, name, description, cost_cents, charge_by
@@ -127,7 +166,7 @@ def edit_service(name: str):
     if not service:
         print("Service not found.")
         return
-
+    # Use existing values as defaults so unchanged fields can be kept.
     service_id = service[0]
     old_name = service[1]
     old_description = service[2] or ""
@@ -168,6 +207,7 @@ def edit_service(name: str):
     if not charge_by:
         return
 
+    # Store money in cents to avoid floating-point rounding issues in the database.
     cost_cents = int(round(float(cost_dollars) * 100))
 
     db.cursor.execute(
@@ -192,7 +232,13 @@ def edit_service(name: str):
     print(f"Updated service: {new_name}")
 
 
-def choose_reservation_services():
+def choose_reservation_services() -> list[int]:
+    """Prompt the user to select optional services for a reservation.
+
+    Returns:
+        list[int]: Selected service IDs, or an empty list if no services are
+        available or the prompt is cancelled.
+    """
     rows = db.fetchall(
         """
         SELECT service_id, name, description, cost_cents, charge_by
@@ -205,6 +251,7 @@ def choose_reservation_services():
         print("No services are available.")
         return []
 
+    # Convert service rows into checkbox choices for the reservation form.
     choices = [
         questionary.Choice(
             title=(
@@ -221,5 +268,5 @@ def choose_reservation_services():
             "Select optional services for this reservation:",
             choices=choices,
         ).ask()
-        or []
+        or []  # Return an empty list if the user cancels or selects no services.
     )

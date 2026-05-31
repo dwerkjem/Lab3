@@ -1,3 +1,8 @@
+"""
+Name: Derek R. Neilson
+Description: Reservation input helpers.
+"""
+
 import questionary
 
 from lab3.modules.crud.database import Database
@@ -6,7 +11,8 @@ from lab3.modules.crud.reservations.validators import validate_datetime
 db = Database()
 
 
-def set_notes(default=""):
+def set_notes(default: str = "") -> str | None:
+    """Prompt the user to enter optional reservation notes."""
     return questionary.text(
         "Do you want to add any notes?",
         default=default,
@@ -14,7 +20,19 @@ def set_notes(default=""):
     ).ask()
 
 
-def get_room(room_names, user_name, default=None):
+def get_room(
+    user_name: str,
+    default: str | None = None,
+) -> dict[str, int | str] | None:
+    """Prompt the user to select a room.
+
+    Args:
+        user_name (str): Customer name shown in the prompt.
+        default (str | None, optional): Room name to select by default.
+
+    Returns:
+        dict[str, int | str] | None: Selected room data, or None if the user quits.
+    """
     db.cursor.execute(
         """
         SELECT room_id, name, day_rate_cents
@@ -55,7 +73,8 @@ def get_room(room_names, user_name, default=None):
     return room
 
 
-def set_event_type(default="Other"):
+def set_event_type(default: str = "Other") -> str | None:
+    """Prompt the user to choose an event type."""
     return questionary.select(
         "What type of event is this?",
         ["Wedding", "Meeting", "Party", "Conference", "Other", "Quit"],
@@ -63,7 +82,8 @@ def set_event_type(default="Other"):
     ).ask()
 
 
-def set_date(room_id, default=""):
+def set_date(room_id: int, default: str = "") -> str | None:
+    """Prompt the user for reservation dates and validate room availability."""
     instruction_text = """Use format `start-date end-date`, where both dates are in `YY-MM-DD`
 format and separated by a space.
 Example: `26-05-01 26-05-29`
@@ -77,14 +97,16 @@ Or enter one date for a single day."""
     ).ask()
 
 
-def set_event_name(default=""):
+def set_event_name(default: str = "") -> str | None:
+    """Prompt the user to enter the reservation event name."""
     return questionary.text(
         "What is your event called",
         default=default,
     ).ask()
 
 
-def get_attendees_count(integer_validator, default="30") -> str | None:
+def get_attendees_count(integer_validator, default: str = "30") -> str | None:
+    """Prompt the user to enter the number of attendees."""
     return questionary.text(
         "How many people will be attending?",
         default=default,
@@ -92,7 +114,8 @@ def get_attendees_count(integer_validator, default="30") -> str | None:
     ).ask()
 
 
-def room_name_from_id(room_id):
+def room_name_from_id(room_id: int) -> str | None:
+    """Return a room name from its room ID, or None if not found."""
     db.cursor.execute(
         "SELECT name FROM rooms WHERE room_id = ?",
         (room_id,),

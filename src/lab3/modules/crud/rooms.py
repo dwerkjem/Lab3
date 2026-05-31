@@ -1,4 +1,11 @@
+"""
+Name: Derek R. Neilson
+Description: Room creation and editing helpers for the admin TUI.
+"""
+
+from collections.abc import Callable
 from decimal import Decimal
+from typing import Literal
 
 import questionary
 
@@ -9,13 +16,21 @@ db = Database()
 crud = CRUD(db)
 
 
-def _rooms_validator(room_name: str):
+def _rooms_validator(room_name: str) -> str | Literal[True]:
+    """Validate that a room name is entered in title case."""
     if room_name != room_name.title():
         return "Please make title case."
     return True
 
 
-def _edit_room_validator(existing_room_names: list[str], current_name: str):
+def _edit_room_validator(
+    existing_room_names: list[str], current_name: str
+) -> Callable[[str], str | Literal[True]]:
+    """Return a validator for edited room names.
+
+    Allows the current room name but rejects duplicate room names.
+    """
+
     def validator(room_name: str):
         if room_name != room_name.title():
             return "Please make title case."
@@ -28,8 +43,11 @@ def _edit_room_validator(existing_room_names: list[str], current_name: str):
     return validator
 
 
-def edit_rooms():
+def edit_rooms() -> None:
+    """Let an admin create a new room or edit an existing room."""
     room_list = db.fetchall("SELECT room_id, name FROM rooms")
+
+    # Existing names are used for autocomplete and to decide add vs. edit.
     room_names = [name for _, name in room_list]
     room_name: str = crud.choose_autocomplete_or_text_prompt(
         "What room do you want to edit/create?", _rooms_validator, room_names
@@ -63,6 +81,7 @@ def edit_rooms():
             validate=crud.dollar_validator,
         ).ask()
 
+        # Store money in cents to avoid floating-point rounding issues in the database.
         new_day_rate_cents = int((Decimal(new_day_rate) * 100).quantize(Decimal("1")))
         db.cursor.execute(
             """
@@ -110,6 +129,7 @@ def edit_rooms():
 
 
 def get_room_by_name(room_name: str) -> dict[str, str | int] | None:
+    """Return room data by room name, or None if the room does not exist."""
     db.cursor.execute(
         """
             SELECT room_id, name, capacity, day_rate_cents

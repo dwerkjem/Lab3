@@ -1,3 +1,8 @@
+"""
+Name: Derek R. Neilson
+Description: Reservation payment workflow helpers.
+"""
+
 from lab3.modules.crud.pricing.calculations import get_reservation_pricing
 from lab3.modules.crud.pricing.main import (
     get_paid_total_cents,
@@ -12,7 +17,8 @@ import questionary
 db = Database()
 
 
-def make_payment(reservation_id: int, amount_cents: int, payment_type: str):
+def make_payment(reservation_id: int, amount_cents: int, payment_type: str) -> None:
+    """Record a paid payment for a reservation."""
     db.cursor.execute(
         """
         INSERT INTO payments (
@@ -35,6 +41,12 @@ def make_payment(reservation_id: int, amount_cents: int, payment_type: str):
 
 
 def verify_and_make_deposit(reservation_id: int) -> bool:
+    """Verify a reservation and collect its deposit or balance payment.
+
+    Returns:
+        bool: True if a payment or verification succeeds, otherwise False.
+    """
+
     pricing = get_reservation_pricing(reservation_id)
 
     if pricing is None:
@@ -53,7 +65,7 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
         return True
 
     deposit_paid = has_paid_deposit(reservation_id)
-
+    # A reservation must have a paid deposit before balance payments are offered.
     if not deposit_paid:
         confirmed = questionary.confirm(
             "Do you verify this reservation and agree to make the required deposit?"
@@ -63,6 +75,7 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
             print("Reservation was not verified. Deposit was not made.")
             return False
 
+        # Limit deposit payment to the remaining balance in case the reservation is nearly paid off.
         deposit_cents = min(pricing["deposit_cents"], remaining_cents)
 
         make_payment(
@@ -116,7 +129,7 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
 
         if amount is None:
             return False
-
+        # Convert the entered dollar amount to cents before storing it.
         payment_cents = int(round(float(amount) * 100))
 
     make_payment(
@@ -133,7 +146,8 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
     return True
 
 
-def make_or_view_payment(customer_id: int):
+def make_or_view_payment(customer_id: int) -> None:
+    """Let a customer choose one of their reservations and make a payment."""
     reservations = db.fetchall(
         """
         SELECT reservation_id, event_name, start_datetime, end_datetime

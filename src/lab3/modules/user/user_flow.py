@@ -1,5 +1,11 @@
+"""
+Name: Derek R. Neilson
+Description: Customer TUI workflow for authentication, reservations, payments, and profile editing.
+"""
+
 import re
 import sys
+from typing import Literal
 
 import questionary
 
@@ -15,15 +21,18 @@ crud = CRUD(db)
 
 
 class Customer:
-    def __init__(self):
-        """sets up `Customer`"""
+    """Customer-facing TUI for account lookup, reservations, payments, and profile editing."""
+
+    def __init__(self) -> None:
+        """Authenticate or register the customer and store their customer data."""
         self.name_dict = self.auth()
         self.user_name = self.name_dict["value"]
         self.user_id = self.name_dict["id"]
         self.user_existed = self.name_dict["existed"]
 
     @staticmethod  # use this decorator to make independent of class https://www.geeksforgeeks.org/python/python-staticmethod/
-    def validate_full_name(full_name: str) -> tuple[bool, str]:
+    def validate_full_name(full_name: str) -> str | Literal[True]:
+        """Validate a customer's full name."""
         words = full_name.strip().split()
 
         if len(words) < 2:
@@ -43,7 +52,8 @@ class Customer:
 
         return True
 
-    def auth(self) -> dict[str, str | bool] | None:
+    def auth(self) -> dict[str, str | bool | int] | None:
+        """Authenticate an existing customer or create a new customer record."""
         return crud.make_or_select_existing_autocomplete(
             "customer_id",
             "full_name",
@@ -52,7 +62,8 @@ class Customer:
             self.validate_full_name,
         )
 
-    def user_options(self):
+    def user_options(self) -> str | None:
+        """Prompt the customer to choose a main menu option."""
         return questionary.select(
             "What would you like to do?",
             [
@@ -64,6 +75,7 @@ class Customer:
         ).ask()
 
     def main(self) -> None:
+        """Run the selected customer workflow."""
         if self.user_existed:
             print(f"Welcome back {self.user_name}")
         else:

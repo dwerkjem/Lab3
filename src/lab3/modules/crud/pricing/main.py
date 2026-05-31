@@ -1,10 +1,15 @@
+"""
+Name: Derek R. Neilson
+Description: Payment and pricing display helpers for reservations.
+"""
+
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.pricing.calculations import calculate_pricing
 from datetime import datetime
 
 db = Database()
 
-
+# Percentage-based pricing adjustments.
 WEEEKEND_SURCHARGE = 0.10
 HOLIDAY_SURCHARGE = 0.15
 WEEKEND_HOLIDAY_SURCHARGE = 0.05
@@ -12,6 +17,7 @@ DEPOSIT_PERCENT = 0.25
 
 
 def get_paid_total_cents(reservation_id: int) -> int:
+    """Return the total paid amount for a reservation in cents."""
     row = db.fetchone(
         """
         SELECT COALESCE(SUM(amount_cents), 0)
@@ -26,6 +32,8 @@ def get_paid_total_cents(reservation_id: int) -> int:
 
 
 def has_paid_deposit(reservation_id: int) -> bool:
+    """Return whether the reservation has a paid deposit recorded."""
+
     row = db.fetchone(
         """
         SELECT 1
@@ -42,6 +50,7 @@ def has_paid_deposit(reservation_id: int) -> bool:
 
 
 def reservation_days(start_datetime: str, end_datetime: str) -> int:
+    """Return the inclusive number of days covered by a reservation."""
     start = start_datetime.split()[0]
     end = end_datetime.split()[0]
 
@@ -51,7 +60,8 @@ def reservation_days(start_datetime: str, end_datetime: str) -> int:
     return (end_date - start_date).days + 1
 
 
-def print_price_breakdown(pricing: dict):
+def print_price_breakdown(pricing: dict) -> None:
+    """Print a formatted pricing breakdown for a reservation."""
     print("\nPrice Breakdown")
     print("----------------")
     print(f"Room: {pricing['room_name']}")
@@ -83,6 +93,10 @@ def preview_reservation_pricing(
     end_datetime: str,
     service_ids: list[int],
 ) -> dict | None:
+    """Calculate pricing for a reservation before it is saved.
+
+    Returns None if the selected room does not exist.
+    """
     room = db.fetchone(
         """
         SELECT

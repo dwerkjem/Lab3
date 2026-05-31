@@ -1,3 +1,8 @@
+"""
+Name: Derek R. Neilson
+Description: Customer name validation and customer record editing helpers.
+"""
+
 import re
 from typing import Callable, Literal
 
@@ -10,8 +15,13 @@ db = Database()
 
 def edit_validate_name(
     names_list: list[str], current_name: str
-) -> Callable[..., str | Literal[True]]:
-    def validate(full_name: str):
+) -> Callable[[str], str | Literal[True]]:
+    """Return a validator for edited customer names.
+
+    Allows the current customer name but rejects duplicate names.
+    """
+
+    def validate(full_name: str) -> str | Literal[True]:
         full_name = full_name.strip()
         words = full_name.split()
 
@@ -39,6 +49,9 @@ def edit_validate_name(
 
 
 def edit_customer(customer_id: str, customer_name: str) -> None:
+    """Prompt for a new customer name and update the customer record."""
+
+    # Existing names are used to prevent duplicate customer names.
     names_list = [
         row[0]
         for row in db.fetchall("""
@@ -65,5 +78,8 @@ def edit_customer(customer_id: str, customer_name: str) -> None:
             customer_id,
         ),
     )
+
+    if new_customer_name is None:
+        return  # Exit if the prompt is cancelled.
 
     db.commit()
