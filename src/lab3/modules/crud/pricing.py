@@ -77,58 +77,23 @@ def _reservation_days(start_datetime: str, end_datetime: str) -> int:
     return (end_date - start_date).days + 1
 
 
-def get_reservation_pricing(reservation_id: int) -> dict | None:
-    reservation = db.fetchone(
-        """
-        SELECT
-            r.reservation_id,
-            r.room_id,
-            r.attendees,
-            r.start_datetime,
-            r.end_datetime,
-            rooms.name,
-            rooms.day_rate_cents
-        FROM reservations r
-        JOIN rooms ON rooms.room_id = r.room_id
-        WHERE r.reservation_id = ?
-        """,
-        (reservation_id,),
-    )
-
-    if not reservation:
-        print("Reservation not found.")
-        return None
-
-    (
-        reservation_id,
-        room_id,
-        attendees,
-        start_datetime,
-        end_datetime,
-        room_name,
-        room_cost_cents,
-    ) = reservation
-
+def _calculate_pricing(
+    room_name: str,
+    room_cost_cents: int,
+    attendees: int,
+    start_datetime: str,
+    end_datetime: str,
+    services: list[tuple],
+    reservation_id: int | None = None,
+) -> dict:
     days = _reservation_days(start_datetime, end_datetime)
-
-    services = db.fetchall(
-        """
-        SELECT
-            s.name,
-            s.cost_cents,
-            s.charge_by
-        FROM reservation_services rs
-        JOIN services s ON s.service_id = rs.service_id
-        WHERE rs.reservation_id = ?
-        """,
-        (reservation_id,),
-    )
 
     room_total_cents, surcharge_total_cents = calculate_room_total(
         start_datetime,
         end_datetime,
         room_cost_cents,
     )
+
     service_total_cents = 0
     service_breakdown = []
 
@@ -164,12 +129,66 @@ def get_reservation_pricing(reservation_id: int) -> dict | None:
         "attendees": attendees,
         "days": days,
         "room_total_cents": room_total_cents,
+        "surcharge_total_cents": surcharge_total_cents,
         "services": service_breakdown,
         "service_total_cents": service_total_cents,
         "total_cents": total_cents,
         "deposit_cents": deposit_cents,
-        "surcharge_total_cents": surcharge_total_cents,
     }
+
+
+def get_reservation_pricing(reservation_id: int) -> dict | None:
+    reservation = db.fetchone(
+        """
+        SELECT
+            r.reservation_id,
+            r.attendees,
+            r.start_datetime,
+            r.end_datetime,
+            rooms.name,
+            rooms.day_rate_cents
+        FROM reservations r
+        JOIN rooms ON rooms.room_id = r.room_id
+        WHERE r.reservation_id = ?
+        """,
+        (reservation_id,),
+    )
+
+    if not reservation:
+        print("Reservation not found.")
+        return None
+
+    (
+        reservation_id,
+        attendees,
+        start_datetime,
+        end_datetime,
+        room_name,
+        room_cost_cents,
+    ) = reservation
+
+    services = db.fetchall(
+        """
+        SELECT
+            s.name,
+            s.cost_cents,
+            s.charge_by
+        FROM reservation_services rs
+        JOIN services s ON s.service_id = rs.service_id
+        WHERE rs.reservation_id = ?
+        """,
+        (reservation_id,),
+    )
+
+    return _calculate_pricing(
+        room_name=room_name,
+        room_cost_cents=room_cost_cents,
+        attendees=attendees,
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+        services=services,
+        reservation_id=reservation_id,
+    )
 
 
 def print_price_breakdown(pricing: dict):
@@ -178,8 +197,8 @@ def print_price_breakdown(pricing: dict):
     print(f"Room: {pricing['room_name']}")
     print(f"Days: {pricing['days']}")
     print(f"Attendees: {pricing['attendees']}")
-    print(f"Weekend/Holiday surcharges: ${pricing['surcharge_total_cents'] / 100:.2f}")
     print(f"Room total: ${pricing['room_total_cents'] / 100:.2f}")
+    print(f"Weekend/Holiday surcharges: ${pricing['surcharge_total_cents'] / 100:.2f}")
 
     print("\nOptional Services:")
     if not pricing["services"]:
@@ -374,3 +393,53 @@ def calculate_room_total(
         current += timedelta(days=1)
 
     return total, surcharge_total
+
+
+def preview_reservation_pricing(
+    room_id: int,
+    attendees: int,
+    start_datetime: str,
+    end_datetime: str,
+    service_ids: list[int],
+) -> dict | None:
+    room = db.fetchone(
+        """
+        SELECT
+            name,
+            day_rate_cents
+        FROM rooms
+        WHERE room_id = ?
+        """,
+        (room_id,),
+    )
+
+    if not room:
+        return None
+
+    room_name, room_cost_cents = room
+
+    services = []
+
+    if service_ids:
+        placeholders = ",".join("?" for _ in service_ids)
+
+        services = db.fetchall(
+            f"""
+            SELECT
+                name,
+                cost_cents,
+                charge_by
+            FROM services
+            WHERE service_id IN ({placeholders})
+            """,
+            service_ids,
+        )
+
+    return _calculate_pricing(
+        room_name=room_name,
+        room_cost_cents=room_cost_cents,
+        attendees=attendees,
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+        services=services,
+    )

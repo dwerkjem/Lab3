@@ -5,7 +5,6 @@ import questionary
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.reservations.optional_services import choose_reservation_services
-from lab3.modules.crud.pricing import verify_and_make_deposit
 from lab3.modules.crud.reservations.values import (
     get_attendees_count,
     get_room,
@@ -16,6 +15,11 @@ from lab3.modules.crud.reservations.values import (
     set_notes,
 )
 
+from lab3.modules.crud.pricing import (
+    preview_reservation_pricing,
+    print_price_breakdown,
+    make_payment,
+)
 
 db = Database()
 crud = CRUD(db)
@@ -80,6 +84,25 @@ def _setup(customer_id, room_names, user_name):
 
     selected_service_ids = choose_reservation_services()
     notes = set_notes()
+    pricing = preview_reservation_pricing(
+        room_id=room_id,
+        attendees=int(attendees_count),
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
+        service_ids=selected_service_ids,
+    )
+
+    print_price_breakdown(pricing)
+
+    confirmed = questionary.confirm(
+        f"The required deposit is "
+        f"${pricing['deposit_cents'] / 100:.2f}. "
+        "Would you like to continue?"
+    ).ask()
+
+    if not confirmed:
+        print("Reservation cancelled.")
+        return
 
     status = approval_status(int(attendees_count))
 
@@ -110,12 +133,22 @@ def _setup(customer_id, room_names, user_name):
             status,
         ),
     )
+
     reservation_id = db.cursor.lastrowid
     save_reservation_services(reservation_id, selected_service_ids)
 
     db.conn.commit()
 
-    verify_and_make_deposit(reservation_id)
+    pay_now = questionary.confirm(
+        f"Pay the deposit of ${pricing['deposit_cents'] / 100:.2f} now?"
+    ).ask()
+
+    if pay_now:
+        make_payment(
+            reservation_id,
+            pricing["deposit_cents"],
+            "deposit",
+        )
 
 
 def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
