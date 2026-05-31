@@ -1,10 +1,15 @@
 import questionary
+from datetime import datetime, timedelta
+import holidays
 
 from lab3.modules.crud.database import Database
 
 db = Database()
 
 
+WEEEKEND_SURCHARGE = 0.10
+HOLIDAY_SURCHARGE = 0.15
+WEEKEND_HOLIDAY_SURCHARGE = 0.05
 DEPOSIT_PERCENT = 0.25
 
 
@@ -119,7 +124,11 @@ def get_reservation_pricing(reservation_id: int) -> dict | None:
         (reservation_id,),
     )
 
-    room_total_cents = room_cost_cents * days
+    room_total_cents, surcharge_total_cents = calculate_room_total(
+        start_datetime,
+        end_datetime,
+        room_cost_cents,
+    )
     service_total_cents = 0
     service_breakdown = []
 
@@ -159,6 +168,7 @@ def get_reservation_pricing(reservation_id: int) -> dict | None:
         "service_total_cents": service_total_cents,
         "total_cents": total_cents,
         "deposit_cents": deposit_cents,
+        "surcharge_total_cents": surcharge_total_cents,
     }
 
 
@@ -168,6 +178,7 @@ def print_price_breakdown(pricing: dict):
     print(f"Room: {pricing['room_name']}")
     print(f"Days: {pricing['days']}")
     print(f"Attendees: {pricing['attendees']}")
+    print(f"Weekend/Holiday surcharges: ${pricing['surcharge_total_cents'] / 100:.2f}")
     print(f"Room total: ${pricing['room_total_cents'] / 100:.2f}")
 
     print("\nOptional Services:")
@@ -317,3 +328,49 @@ def make_or_view_payment(customer_id: int):
         return
 
     verify_and_make_deposit(reservation_id)
+
+
+def calculate_room_total(
+    start_datetime: str,
+    end_datetime: str,
+    day_rate_cents: int,
+) -> tuple[int, int]:
+    start_date = datetime.strptime(
+        start_datetime.split()[0],
+        "%Y-%m-%d",
+    ).date()
+
+    end_date = datetime.strptime(
+        end_datetime.split()[0],
+        "%Y-%m-%d",
+    ).date()
+
+    us_holidays = holidays.US()
+
+    total = 0
+    surcharge_total = 0
+
+    current = start_date
+
+    while current <= end_date:
+        daily_cost = day_rate_cents
+        surcharge = 0
+
+        is_weekend = current.weekday() >= 5
+        is_holiday = current in us_holidays
+
+        if is_weekend:
+            surcharge += int(day_rate_cents * WEEEKEND_SURCHARGE)
+
+        if is_holiday:
+            surcharge += int(day_rate_cents * HOLIDAY_SURCHARGE)
+
+        if is_weekend and is_holiday:
+            surcharge += int(day_rate_cents * WEEKEND_HOLIDAY_SURCHARGE)
+
+        total += daily_cost + surcharge
+        surcharge_total += surcharge
+
+        current += timedelta(days=1)
+
+    return total, surcharge_total
