@@ -47,25 +47,14 @@ def _is_reserved_date_in_range(
 
 
 def validate_datetime(room_id: str) -> Callable[[str], str | Literal[True]]:
-    """Return a validator for reservation date ranges.
-
-    The validator checks format, prevents past dates, enforces start-before-end,
-    limits normal reservations to 30 days, and rejects ranges that overlap an
-    approved reservation for the selected room.
-
-    Args:
-        room_id (str): Room ID to check for approved reservation conflicts.
-
-    Returns:
-        Callable[[str], str | Literal[True]]: Validator function for date input.
-    """
+    """Return a validator for reservation date or date range."""
 
     def validator(dates: str):
         parts = dates.split()
         today = datetime.date.today()
 
-        if len(parts) != 2:
-            return "Enter exactly 2 dates using format `YY-MM-DD YY-MM-DD`."
+        if len(parts) not in (1, 2):
+            return "Enter 1 or 2 dates using format `YY-MM-DD` or `YY-MM-DD YY-MM-DD`."
 
         parsed_dates = []
 
@@ -79,17 +68,22 @@ def validate_datetime(room_id: str) -> Callable[[str], str | Literal[True]]:
             if parsed_date < today:
                 return f"{date} is in the past. Please enter today or a future date."
 
-        start, end = parsed_dates
+        if len(parsed_dates) == 1:
+            start = end = parsed_dates[0]
+        else:
+            start, end = parsed_dates
 
-        if start > end:
-            return f"The start date {parts[0]} must be before {parts[1]}."
+            if start > end:
+                return f"The start date {parts[0]} must be before {parts[1]}."
 
-        if (end - start).days > 30:
-            return (
-                "Reservations cannot be longer than 30 days without special approval."
-            )
+            if (end - start).days > 30:
+                return "Reservations cannot be longer than 30 days without special approval."
 
-        reserved_dates = _is_reserved_date_in_range(room_id, parts[0], parts[1])
+        reserved_dates = _is_reserved_date_in_range(
+            room_id,
+            start.strftime("%y-%m-%d"),
+            end.strftime("%y-%m-%d"),
+        )
 
         if reserved_dates:
             return f"That room is already reserved during: {reserved_dates}"
