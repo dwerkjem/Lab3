@@ -8,3 +8,5 @@ CREATE TABLE IF NOT EXISTS payments (
 
     FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id)
 );
+INSERT INTO schema_migrations (version)
+VALUES ('003_create_payments_table');
