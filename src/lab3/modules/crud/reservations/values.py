@@ -23,32 +23,51 @@ def set_notes(default: str = "") -> str | None:
 def get_room(
     user_name: str,
     default: str | None = None,
+    minimum_capacity: int | None = None,
 ) -> dict[str, int | str] | None:
     """Prompt the user to select a room.
 
     Args:
         user_name (str): Customer name shown in the prompt.
         default (str | None, optional): Room name to select by default.
+        minimum_capacity (int | None, optional): Minimum required room capacity.
 
     Returns:
         dict[str, int | str] | None: Selected room data, or None if the user quits.
     """
-    db.cursor.execute(
-        """
-        SELECT room_id, name, day_rate_cents
-        FROM rooms
-        """
-    )
+    if minimum_capacity is None:
+        db.cursor.execute(
+            """
+            SELECT room_id, name, capacity, day_rate_cents
+            FROM rooms
+            ORDER BY capacity ASC
+            """
+        )
+    else:
+        db.cursor.execute(
+            """
+            SELECT room_id, name, capacity, day_rate_cents
+            FROM rooms
+            WHERE capacity >= ?
+            ORDER BY capacity ASC
+            """,
+            (minimum_capacity,),
+        )
 
     rows = db.cursor.fetchall()
 
+    if not rows:
+        print(f"Sorry non of our rooms can hold {minimum_capacity} people.")
+        return None
+
     display_to_room = {"Quit": None}
 
-    for room_id, name, day_rate_cents in rows:
-        display_name = f"{name} - ${day_rate_cents / 100:.2f}"
+    for room_id, name, capacity, day_rate_cents in rows:
+        display_name = f"{name} - capacity {capacity} - ${day_rate_cents / 100:,.2f}"
         display_to_room[display_name] = {
             "id": room_id,
             "name": name,
+            "capacity": capacity,
         }
 
     default_display = None

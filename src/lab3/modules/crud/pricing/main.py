@@ -67,8 +67,8 @@ def print_price_breakdown(pricing: dict) -> None:
     print(f"Room: {pricing['room_name']}")
     print(f"Days: {pricing['days']}")
     print(f"Attendees: {pricing['attendees']}")
-    print(f"Room total: ${pricing['room_total_cents'] / 100:.2f}")
-    print(f"Weekend/Holiday surcharges: ${pricing['surcharge_total_cents'] / 100:.2f}")
+    print(f"Room total: ${pricing['room_total_cents'] / 100:,.2f}")
+    print(f"Weekend/Holiday surcharges: ${pricing['surcharge_total_cents'] / 100:,.2f}")
 
     print("\nOptional Services:")
     if not pricing["services"]:
@@ -78,12 +78,12 @@ def print_price_breakdown(pricing: dict) -> None:
             print(
                 f"- {service['name']} "
                 f"({service['charge_by']}): "
-                f"${service['total_cents'] / 100:.2f}"
+                f"${service['total_cents'] / 100:,.2f}"
             )
 
-    print(f"\nService total: ${pricing['service_total_cents'] / 100:.2f}")
-    print(f"Grand total: ${pricing['total_cents'] / 100:.2f}")
-    print(f"Required deposit: ${pricing['deposit_cents'] / 100:.2f}")
+    print(f"\nService total: ${pricing['service_total_cents'] / 100:,.2f}")
+    print(f"Grand total: ${pricing['total_cents'] / 100:,.2f}")
+    print(f"Required deposit: ${pricing['deposit_cents'] / 100:,.2f}")
 
 
 def preview_reservation_pricing(

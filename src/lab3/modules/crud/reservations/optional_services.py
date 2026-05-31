@@ -49,7 +49,7 @@ def get_list_of_services() -> list[questionary.Choice]:
     return [
         questionary.Choice(
             title=(  # Format each service as one display line and convert cents to dollars.
-                f"{row['name']} - ${row['cost_cents'] / 100:.2f} ({row['charge_by']}) "
+                f"{row['name']} - ${row['cost_cents'] / 100:,.2f} ({row['charge_by']}) "
                 f"{'| ' + row['description'] if row['description'] else ''}"
             ),
             value=row["service_id"],
@@ -188,7 +188,7 @@ def edit_service(name: str) -> None:
 
     cost_dollars = questionary.text(
         "Cost in dollars:",
-        default=f"{old_cost_cents / 100:.2f}",
+        default=f"{old_cost_cents / 100:,.2f}",
         validate=crud.dollar_validator,
     ).ask()
     if not cost_dollars:
@@ -255,7 +255,7 @@ def choose_reservation_services() -> list[int]:
     choices = [
         questionary.Choice(
             title=(
-                f"{row[1]} - ${row[3] / 100:.2f} ({row[4]}) "
+                f"{row[1]} - ${row[3] / 100:,.2f} ({row[4]}) "
                 f"{'| ' + row[2] if row[2] else ''}"
             ),
             value=row[0],

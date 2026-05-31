@@ -57,8 +57,8 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
     paid_total_cents = get_paid_total_cents(reservation_id)
     remaining_cents = pricing["total_cents"] - paid_total_cents
 
-    print(f"\nAlready paid: ${paid_total_cents / 100:.2f}")
-    print(f"Remaining balance: ${remaining_cents / 100:.2f}")
+    print(f"\nAlready paid: ${paid_total_cents / 100:,.2f}")
+    print(f"Remaining balance: ${remaining_cents / 100:,.2f}")
 
     if remaining_cents <= 0:
         print("This reservation is already fully paid.")
@@ -95,7 +95,7 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
 
         db.conn.commit()
 
-        print(f"Deposit paid: ${deposit_cents / 100:.2f}")
+        print(f"Deposit paid: ${deposit_cents / 100:,.2f}")
         print("Reservation verified.")
         return True
 
@@ -123,7 +123,7 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
                 if value.replace(".", "", 1).isdigit()
                 and float(value) > 0
                 and int(round(float(value) * 100)) <= remaining_cents
-                else f"Enter an amount greater than $0.00 and no more than ${remaining_cents / 100:.2f}."
+                else f"Enter an amount greater than $0.00 and no more than ${remaining_cents / 100:,.2f}."
             ),
         ).ask()
 
@@ -138,10 +138,10 @@ def verify_and_make_deposit(reservation_id: int) -> bool:
         "balance",
     )
 
-    print(f"Payment made: ${payment_cents / 100:.2f}")
+    print(f"Payment made: ${payment_cents / 100:,.2f}")
 
     new_remaining_cents = remaining_cents - payment_cents
-    print(f"Remaining balance: ${new_remaining_cents / 100:.2f}")
+    print(f"Remaining balance: ${new_remaining_cents / 100:,.2f}")
 
     return True
 
