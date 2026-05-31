@@ -81,6 +81,8 @@ def _setup(customer_id, room_names, user_name):
     selected_service_ids = choose_reservation_services()
     notes = set_notes()
 
+    status = approval_status(int(attendees_count))
+
     db.cursor.execute(
         """
         INSERT INTO reservations (
@@ -91,9 +93,10 @@ def _setup(customer_id, room_names, user_name):
             event_type,
             start_datetime,
             end_datetime,
-            notes
+            notes,
+            status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             customer_id,
@@ -104,6 +107,7 @@ def _setup(customer_id, room_names, user_name):
             start_datetime,
             end_datetime,
             notes,
+            status,
         ),
     )
 
@@ -240,3 +244,11 @@ def save_reservation_services(reservation_id: int, service_ids: list[int]):
             """,
             (reservation_id, service_id),
         )
+
+
+def approval_status(attendees_count: int) -> str:
+    if attendees_count < 300:
+        print("You are auto-approved because you have under 300 guests.")
+        return "approved"
+
+    return "pending approval"
