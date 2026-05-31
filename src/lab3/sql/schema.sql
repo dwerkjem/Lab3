@@ -16,6 +16,17 @@ CREATE TABLE IF NOT EXISTS rooms (
     day_rate_cents INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reservation_id INTEGER NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    payment_type TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id)
+);
+
 CREATE TABLE IF NOT EXISTS reservations (
     reservation_id INTEGER PRIMARY KEY AUTOINCREMENT,
     customer_id INTEGER NOT NULL,

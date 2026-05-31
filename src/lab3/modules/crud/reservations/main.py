@@ -5,7 +5,7 @@ import questionary
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.reservations.optional_services import choose_reservation_services
-
+from lab3.modules.crud.pricing import verify_and_make_deposit
 from lab3.modules.crud.reservations.values import (
     get_attendees_count,
     get_room,
@@ -110,11 +110,12 @@ def _setup(customer_id, room_names, user_name):
             status,
         ),
     )
-
     reservation_id = db.cursor.lastrowid
     save_reservation_services(reservation_id, selected_service_ids)
 
     db.conn.commit()
+
+    verify_and_make_deposit(reservation_id)
 
 
 def edit_existing_reservation(reservation_list, room_names, user_name) -> None:

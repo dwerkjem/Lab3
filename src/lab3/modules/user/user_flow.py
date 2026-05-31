@@ -7,6 +7,7 @@ from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
 from lab3.modules.crud.reservations.main import edit_reservations
 from lab3.modules.crud.user import edit_customer
+from lab3.modules.crud.pricing import make_or_view_payment
 
 db = Database()
 
@@ -54,23 +55,34 @@ class Customer:
     def user_options(self):
         return questionary.select(
             "What would you like to do?",
-            ["Make Reservation or Edit Reservations", "Edit Profile", "Quit"],
+            [
+                "Make Reservation or Edit Reservations",
+                "Make or View Payment",
+                "Edit Profile",
+                "Quit",
+            ],
         ).ask()
 
     def main(self):
         if self.user_existed:
             print(f"Welcome back {self.user_name}")
         else:
-            print((f"Thank you for registering {self.user_name}"))
+            print(f"Thank you for registering {self.user_name}")
 
         option = self.user_options()
+
         if option == "Quit":
             print("Good bye!")
             sys.exit(0)
+
         elif option == "Edit Profile":
             edit_customer(self.user_id, self.user_name)
+
         elif option == "Make Reservation or Edit Reservations":
             edit_reservations(self.name_dict)
+
+        elif option == "Make or View Payment":
+            make_or_view_payment(self.user_id)
 
 
 if __name__ == "__main__":

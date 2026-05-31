@@ -63,8 +63,7 @@ def edit_rooms():
             validate=crud.dollar_validator,
         ).ask()
 
-        new_day_rate_cents = int(Decimal(new_day_rate) * 100)
-        new_day_rate_cents = int(Decimal(new_day_rate_cents) * 100)
+        new_day_rate_cents = int((Decimal(new_day_rate) * 100).quantize(Decimal("1")))
         db.cursor.execute(
             """
             UPDATE rooms
