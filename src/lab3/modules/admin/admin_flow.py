@@ -1,18 +1,22 @@
+"""
+Name: Derek R. Neilson
+Description: All admin options are accessed here.
+"""
+
 import sys
 
 import questionary
 
 from lab3.modules.admin.customer_admin import AdminEditCustomer
 from lab3.modules.crud import rooms
-from lab3.modules.crud.reservations.optional_services import (
-    edit_add_service,
-)
+from lab3.modules.crud.reservations.optional_services import edit_add_service
 from lab3.modules.admin.reservations_admin import chose_reservations
 
-UNSECURE_PASSWORD = "pas"
+UNSECURE_PASSWORD = "pas"  # would be in .env in production
 
 
 def main() -> None:
+    """Authenticated admin will pick an option and it will take them to the respected module."""
     if not auth():
         sys.exit(0)
 
@@ -32,7 +36,12 @@ def main() -> None:
         sys.exit(0)
 
 
-def auth() -> bool:
+def auth() -> bool | None:
+    """Authenticates admin a real world example would use crypto library for sure.
+
+    Returns:
+        bool | None: Whether the user successfully logged in as an admin or not
+    """
     password = questionary.password(
         f"Verify with a password\n"
         f"  The password is `{UNSECURE_PASSWORD}` for demo purposes"
@@ -46,7 +55,7 @@ def auth() -> bool:
     return False
 
 
-def admin_options():
+def admin_options() -> str | None:
     return questionary.select(
         "What do you want to change?",
         ["Rooms", "Customers", "Reservations", "Services", "Quit"],

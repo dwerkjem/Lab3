@@ -1,5 +1,6 @@
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.pricing.calculations import calculate_pricing
+from datetime import datetime
 
 db = Database()
 
@@ -43,8 +44,6 @@ def has_paid_deposit(reservation_id: int) -> bool:
 def reservation_days(start_datetime: str, end_datetime: str) -> int:
     start = start_datetime.split()[0]
     end = end_datetime.split()[0]
-
-    from datetime import datetime
 
     start_date = datetime.strptime(start, "%y-%m-%d").date()
     end_date = datetime.strptime(end, "%y-%m-%d").date()

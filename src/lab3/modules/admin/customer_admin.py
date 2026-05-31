@@ -1,3 +1,5 @@
+""" """
+
 import re
 
 import questionary
@@ -10,6 +12,8 @@ crud = CRUD(db)
 
 
 class AdminEditCustomer:
+    """TUI used for editing an existing customer"""
+
     def __init__(self):
         self.customer = self._select_customer()
 
@@ -21,7 +25,8 @@ class AdminEditCustomer:
         self.customer_id = self.customer["id"]
         self.customer_name = self.customer["value"]
 
-    def main(self):
+    def main(self) -> None:
+        """ """
         if self.customer is None:
             return
 
@@ -41,17 +46,6 @@ class AdminEditCustomer:
             self.toggle_auto_approval()
         elif choice == "Delete customer":
             self.delete_customer()
-
-    def _select_customer(self):
-        names_list = self._get_customer_names()
-
-        return crud.make_or_select_existing_autocomplete(
-            "customer_id",
-            "full_name",
-            "customers",
-            "Select customer to edit or delete",
-            self._edit_validate_name(names_list),
-        )
 
     def edit_name(self):
         names_list = self._get_customer_names()

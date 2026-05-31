@@ -55,7 +55,7 @@ def choose_reservation():
         JOIN rooms
             ON reservations.room_id = rooms.room_id
         ORDER BY reservations.start_datetime
-    """)
+    """)  # Gets reservations and orders them by start time
 
     if not rows:
         print("No reservations found.")
