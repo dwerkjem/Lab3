@@ -11,6 +11,36 @@ from lab3.modules.crud.database import Database
 db = Database()
 
 
+def _parse_db_date(value: str) -> datetime.date:
+    """
+    Parse a database date value into a ``datetime.date``.
+
+    Supports the following formats:
+    - YY-MM-DD (e.g. ``26-9-8`` or ``26-09-08``)
+    - YYYY-MM-DD (e.g. ``2026-09-08``)
+    - Datetime strings where the date is the first token
+      (e.g. ``2026-09-08 14:30:00``)
+
+    Args:
+        value: Date value retrieved from the database.
+
+    Raises:
+        ValueError: If the value cannot be parsed as a supported date format.
+
+    Returns:
+        The parsed date.
+    """
+    value = str(value).split()[0]
+
+    for fmt in ("%y-%m-%d", "%Y-%m-%d"):
+        try:
+            return datetime.datetime.strptime(value, fmt).date()
+        except ValueError:
+            pass
+
+    raise ValueError(f"Invalid date in database: {value}")
+
+
 def _is_reserved_date_in_range(
     room_id: str, start_date: str, end_date: str
 ) -> list[Any] | Literal[False]:
@@ -26,24 +56,32 @@ def _is_reserved_date_in_range(
         are no overlapping reservations.
     """
 
-    reserved_dates = db.fetchall(
+    requested_start = _parse_db_date(start_date)
+    requested_end = _parse_db_date(end_date)
+
+    reservations = db.fetchall(
         """
         SELECT start_datetime, end_datetime
         FROM reservations
         WHERE room_id = ?
           AND status = 'approved'
-          -- YY-MM-DD date strings can be compared lexicographically because the
-          -- largest time unit appears first.
-          AND start_datetime <= ?
-          AND end_datetime >= ?
-    """,
-        (int(room_id), end_date, start_date),
+        """,
+        (int(room_id),),
     )
 
-    if not reserved_dates:
+    overlapping = []
+
+    for reservation in reservations:
+        reserved_start = _parse_db_date(reservation[0])
+        reserved_end = _parse_db_date(reservation[1])
+
+        if reserved_start <= requested_end and reserved_end >= requested_start:
+            overlapping.append(reservation)
+
+    if not overlapping:
         return False
 
-    return reserved_dates
+    return overlapping
 
 
 def validate_datetime(room_id: str) -> Callable[[str], str | Literal[True]]:
