@@ -46,8 +46,8 @@ def reservation_days(start_datetime: str, end_datetime: str) -> int:
 
     from datetime import datetime
 
-    start_date = datetime.strptime(start, "%Y-%m-%d").date()
-    end_date = datetime.strptime(end, "%Y-%m-%d").date()
+    start_date = datetime.strptime(start, "%y-%m-%d").date()
+    end_date = datetime.strptime(end, "%y-%m-%d").date()
 
     return (end_date - start_date).days + 1
 

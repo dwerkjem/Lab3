@@ -15,12 +15,12 @@ DEPOSIT_PERCENT = 0.25
 def reservation_days(start_datetime: str, end_datetime: str) -> int:
     start_date = datetime.strptime(
         start_datetime.split()[0],
-        "%Y-%m-%d",
+        "%y-%m-%d",
     ).date()
 
     end_date = datetime.strptime(
         end_datetime.split()[0],
-        "%Y-%m-%d",
+        "%y-%m-%d",
     ).date()
 
     return (end_date - start_date).days + 1
@@ -33,12 +33,12 @@ def calculate_room_total(
 ) -> tuple[int, int]:
     start_date = datetime.strptime(
         start_datetime.split()[0],
-        "%Y-%m-%d",
+        "%y-%m-%d",
     ).date()
 
     end_date = datetime.strptime(
         end_datetime.split()[0],
-        "%Y-%m-%d",
+        "%y-%m-%d",
     ).date()
 
     us_holidays = holidays.US()

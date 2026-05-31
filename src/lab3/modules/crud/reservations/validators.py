@@ -16,7 +16,7 @@ def _is_reserved_date_in_range(room_id: str, start_date: str, end_date: str):
           AND end_datetime >= ?
     """,
         (int(room_id), end_date, start_date),
-    )  # This woks only because it is YYYY-MM-DD and
+    )  # This woks only because it is YY-MM-DD and
     # therefore there in the right order and can be compared like this.
 
     if not reserved_dates:
@@ -37,10 +37,10 @@ def validate_datetime(room_id):
 
         for date in parts:
             try:
-                parsed_date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+                parsed_date = datetime.datetime.strptime(date, "%y-%m-%d").date()
                 parsed_dates.append(parsed_date)
             except ValueError:
-                return f"{date} is invalid, use this format `YYYY-MM-DD`."
+                return f"{date} is invalid, use this format `YY-MM-DD`."
 
             if parsed_date < today:
                 return f"{date} is in the past. Please enter today or a future date."

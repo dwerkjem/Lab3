@@ -38,7 +38,7 @@ db.conn.commit()
 
 def user_type() -> str:
     return questionary.select(
-        "What type of user are you?", choices=["Customer ", "Admin", "Quit"]
+        "What type of user are you?", choices=["Customer", "Admin", "Quit"]
     ).ask()
 
 

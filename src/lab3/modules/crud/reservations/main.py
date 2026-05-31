@@ -61,7 +61,7 @@ def edit_reservations(name_dict: dict):
     )
 
     if not reservation_list:
-        _setup(customer_id, room_names, user_name, room_display_to_name)
+        _setup(customer_id, room_names, user_name)
         return
 
     choice = questionary.select(
@@ -70,7 +70,7 @@ def edit_reservations(name_dict: dict):
     ).ask()
 
     if choice == "Make a new reservation":
-        _setup(customer_id, room_names, user_name, room_display_to_name)
+        _setup(customer_id, room_names, user_name)
     elif choice == "Edit an existing reservation":
         edit_existing_reservation(
             reservation_list,
@@ -80,16 +80,10 @@ def edit_reservations(name_dict: dict):
         )
 
 
-def _setup(customer_id, room_names, user_name, room_display_to_name):
+def _setup(customer_id, room_names, user_name):
     event_name = set_event_name()
     event_type = set_event_type()
-    room_choice = get_room(room_names, user_name)
-
-    if room_choice is None:
-        sys.exit(0)
-
-    room_name = room_display_to_name.get(room_choice["name"], room_choice["name"])
-    room = get_room(["Quit", room_name], user_name)
+    room = get_room(room_names, user_name)
 
     if event_name is None or event_type in (None, "Quit") or room is None:
         sys.exit(0)

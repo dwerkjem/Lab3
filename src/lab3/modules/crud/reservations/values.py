@@ -15,26 +15,44 @@ def set_notes(default=""):
 
 
 def get_room(room_names, user_name, default=None):
-    room_name = questionary.select(
-        f"{user_name}, which room would you like to reserve?",
-        room_names,
-        default=default,
-    ).ask()
-
-    if room_name in (None, "Quit"):
-        return None
-
     db.cursor.execute(
         """
-        SELECT room_id
+        SELECT room_id, name, day_rate_cents
         FROM rooms
-        WHERE name = ?
-        """,
-        (room_name,),
+        """
     )
 
-    room = db.cursor.fetchone()
-    return {"id": room[0], "name": room_name}
+    rows = db.cursor.fetchall()
+
+    display_to_room = {"Quit": None}
+
+    for room_id, name, day_rate_cents in rows:
+        display_name = f"{name} - ${day_rate_cents / 100:.2f}"
+        display_to_room[display_name] = {
+            "id": room_id,
+            "name": name,
+        }
+
+    default_display = None
+
+    if default is not None:
+        for display_name, room in display_to_room.items():
+            if room is not None and room["name"] == default:
+                default_display = display_name
+                break
+
+    selected_display = questionary.select(
+        f"{user_name}, which room would you like to reserve?",
+        list(display_to_room.keys()),
+        default=default_display,
+    ).ask()
+
+    room = display_to_room.get(selected_display)
+
+    if room is None:
+        return None
+
+    return room
 
 
 def set_event_type(default="Other"):
@@ -46,7 +64,7 @@ def set_event_type(default="Other"):
 
 
 def set_date(room_id, default=""):
-    instruction_text = """Use format `start-date end-date`, where both dates are in `YYYY-MM-DD`
+    instruction_text = """Use format `start-date end-date`, where both dates are in `YY-MM-DD`
 format and separated by a space.
 Example: `2026-05-01 2026-05-29`
 Or enter one date for a single day."""
