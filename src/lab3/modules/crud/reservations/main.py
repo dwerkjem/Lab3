@@ -4,6 +4,7 @@ import questionary
 
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
+from lab3.modules.crud.pricing.verify_payments import make_payment
 from lab3.modules.crud.reservations.optional_services import choose_reservation_services
 from lab3.modules.crud.reservations.values import (
     get_attendees_count,
@@ -15,10 +16,9 @@ from lab3.modules.crud.reservations.values import (
     set_notes,
 )
 
-from lab3.modules.crud.pricing import (
+from lab3.modules.crud.pricing.main import (
     preview_reservation_pricing,
     print_price_breakdown,
-    make_payment,
 )
 
 db = Database()
