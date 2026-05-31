@@ -1,3 +1,8 @@
+"""
+Name: Derek R. Neilson
+Description: Reservation pricing calculations and cost breakdown utilities.
+"""
+
 from datetime import datetime, timedelta
 
 import holidays
@@ -6,6 +11,7 @@ from lab3.modules.crud.database import Database
 
 db = Database()
 
+# Percentage-based pricing adjustments.
 WEEEKEND_SURCHARGE = 0.10
 HOLIDAY_SURCHARGE = 0.15
 WEEKEND_HOLIDAY_SURCHARGE = 0.05
@@ -13,6 +19,15 @@ DEPOSIT_PERCENT = 0.25
 
 
 def reservation_days(start_datetime: str, end_datetime: str) -> int:
+    """Return the inclusive number of days covered by a reservation.
+
+    Args:
+        start_datetime (str): Reservation start date and time as a string `"YY-MM-DD"`.
+        end_datetime (str): Reservation end date and time as a string `"YY-MM-DD"`.
+
+    Returns:
+        int: Number of calendar days included in the reservation.
+    """
     start_date = datetime.strptime(
         start_datetime.split()[0],
         "%y-%m-%d",
@@ -26,11 +41,22 @@ def reservation_days(start_datetime: str, end_datetime: str) -> int:
     return (end_date - start_date).days + 1
 
 
+# Monetary values are stored in cents to avoid floating-point rounding errors.
 def calculate_room_total(
     start_datetime: str,
     end_datetime: str,
     day_rate_cents: int,
 ) -> tuple[int, int]:
+    """Calculate the room total and surcharge total for a reservation.
+
+    Args:
+        start_datetime (str): Reservation start date and time as a string.
+        end_datetime (str): Reservation end date and time as a string.
+        day_rate_cents (int): Base room cost per day, stored in cents.
+
+    Returns:
+        tuple[int, int]: Total room cost in cents and total surcharge amount in cents.
+    """
     start_date = datetime.strptime(
         start_datetime.split()[0],
         "%y-%m-%d",
@@ -48,6 +74,7 @@ def calculate_room_total(
 
     current = start_date
 
+    # Check each calendar day so weekend and holiday surcharges can be applied daily.
     while current <= end_date:
         daily_cost = day_rate_cents
         surcharge = 0
@@ -55,6 +82,7 @@ def calculate_room_total(
         is_weekend = current.weekday() >= 5
         is_holiday = current in us_holidays
 
+        # Apply each surcharge separately; weekend holidays receive all applicable surcharges.
         if is_weekend:
             surcharge += int(day_rate_cents * WEEEKEND_SURCHARGE)
 
@@ -81,6 +109,21 @@ def calculate_pricing(
     services: list[tuple],
     reservation_id: int | None = None,
 ) -> dict:
+    """Calculate the full pricing breakdown for a reservation.
+
+    Args:
+        room_name (str): Name of the reserved room.
+        room_cost_cents (int): Base room cost per day, stored in cents.
+        attendees (int): Number of people attending the event.
+        start_datetime (str): Reservation start date and time as a string.
+        end_datetime (str): Reservation end date and time as a string.
+        services (list[tuple]): Optional services as name, cost, and charge type tuples.
+        reservation_id (int | None, optional): Reservation ID, if one already exists.
+
+    Returns:
+        dict: Pricing breakdown including room total, service total, deposit, and final total.
+    """
+
     days = reservation_days(start_datetime, end_datetime)
 
     room_total_cents, surcharge_total_cents = calculate_room_total(
@@ -92,6 +135,7 @@ def calculate_pricing(
     service_total_cents = 0
     service_breakdown = []
 
+    # Service totals depend on how each service is charged.
     for name, cost_cents, charge_by in services:
         if charge_by == "one time":
             total = cost_cents
@@ -133,6 +177,16 @@ def calculate_pricing(
 
 
 def get_reservation_pricing(reservation_id: int) -> dict | None:
+    """Fetch reservation data and return its pricing breakdown.
+
+    Args:
+        reservation_id (int): Reservation to calculate pricing for.
+
+    Returns:
+        dict | None: Pricing breakdown for the reservation, or None if the
+        reservation does not exist.
+    """
+    # Fetch reservation and room data needed for the base room price.
     reservation = db.fetchone(
         """
         SELECT
@@ -162,6 +216,7 @@ def get_reservation_pricing(reservation_id: int) -> dict | None:
         room_cost_cents,
     ) = reservation
 
+    # Fetch optional services attached to this reservation.
     services = db.fetchall(
         """
         SELECT

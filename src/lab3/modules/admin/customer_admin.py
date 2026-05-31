@@ -1,5 +1,6 @@
 """
 Name: Derek R. Neilson
+Description: Admins point to edit customers.
 """
 
 import re
@@ -213,13 +214,12 @@ class AdminEditCustomer:
         return validate
 
     def _select_customer(self) -> dict[str, int | str] | None:
-        def _select_customer(self) -> dict[str, int | str] | None:
-            """Prompt the admin to select a customer.
+        """Prompt the admin to select a customer.
 
-            Returns:
-                dict[str, int | str] | None: Selected customer data, or None if no
-                customers exist or the admin chooses Quit.
-            """
+        Returns:
+            dict[str, int | str] | None: Selected customer data, or None if no
+            customers exist or the admin chooses Quit.
+        """
 
         customers = db.fetchall("""
             SELECT customer_id, full_name
