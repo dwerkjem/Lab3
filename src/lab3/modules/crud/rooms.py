@@ -148,15 +148,3 @@ def get_room_by_name(room_name: str) -> dict[str, str | int] | None:
         "capacity": capacity,
         "day_rate_cents": day_rate_cents,
     }
-
-
-def get_available_rooms_for_party(number_of_people: int):
-    return db.fetchall(
-        """
-        SELECT room_id, name, capacity, day_rate_cents
-        FROM rooms
-        WHERE capacity >= ?
-        ORDER BY capacity ASC, day_rate_cents ASC
-        """,
-        (number_of_people,),
-    )
