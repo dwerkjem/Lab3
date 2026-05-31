@@ -12,7 +12,7 @@ from lab3.modules.admin.reservations_admin import chose_reservations
 UNSECURE_PASSWORD = "pas"
 
 
-def main():
+def main() -> None:
     if not auth():
         sys.exit(0)
 

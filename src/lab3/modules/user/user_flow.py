@@ -43,7 +43,7 @@ class Customer:
 
         return True
 
-    def auth(self):
+    def auth(self) -> dict[str, str | bool] | None:
         return crud.make_or_select_existing_autocomplete(
             "customer_id",
             "full_name",
@@ -63,7 +63,7 @@ class Customer:
             ],
         ).ask()
 
-    def main(self):
+    def main(self) -> None:
         if self.user_existed:
             print(f"Welcome back {self.user_name}")
         else:

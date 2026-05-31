@@ -30,8 +30,12 @@ def _split_dates(date_string):
     return (parts[0], parts[0]) if len(parts) == 1 else (parts[0], parts[1])
 
 
+def _room_choice_label(name: str, day_rate_cents: int) -> str:
+    return f"{name} - ${day_rate_cents / 100:.2f}"
+
+
 def edit_reservations(name_dict: dict):
-    room_list = db.fetchall("SELECT room_id, name FROM rooms")
+    room_list = db.fetchall("SELECT room_id, name, day_rate_cents FROM rooms")
 
     if not room_list:
         print("No rooms are created. Contact admin!")
@@ -39,7 +43,13 @@ def edit_reservations(name_dict: dict):
 
     customer_id = name_dict["id"]
     user_name = name_dict["value"]
-    room_names = ["Quit"] + [name for _, name in room_list]
+
+    room_display_to_name = {
+        _room_choice_label(name, day_rate_cents): name
+        for _, name, day_rate_cents in room_list
+    }
+
+    room_names = ["Quit"] + list(room_display_to_name.keys())
 
     reservation_list = db.fetchall(
         """
@@ -51,7 +61,7 @@ def edit_reservations(name_dict: dict):
     )
 
     if not reservation_list:
-        _setup(customer_id, room_names, user_name)
+        _setup(customer_id, room_names, user_name, room_display_to_name)
         return
 
     choice = questionary.select(
@@ -60,15 +70,26 @@ def edit_reservations(name_dict: dict):
     ).ask()
 
     if choice == "Make a new reservation":
-        _setup(customer_id, room_names, user_name)
+        _setup(customer_id, room_names, user_name, room_display_to_name)
     elif choice == "Edit an existing reservation":
-        edit_existing_reservation(reservation_list, room_names, user_name)
+        edit_existing_reservation(
+            reservation_list,
+            room_names,
+            user_name,
+            room_display_to_name,
+        )
 
 
-def _setup(customer_id, room_names, user_name):
+def _setup(customer_id, room_names, user_name, room_display_to_name):
     event_name = set_event_name()
     event_type = set_event_type()
-    room = get_room(room_names, user_name)
+    room_choice = get_room(room_names, user_name)
+
+    if room_choice is None:
+        sys.exit(0)
+
+    room_name = room_display_to_name.get(room_choice["name"], room_choice["name"])
+    room = get_room(["Quit", room_name], user_name)
 
     if event_name is None or event_type in (None, "Quit") or room is None:
         sys.exit(0)
@@ -151,7 +172,12 @@ def _setup(customer_id, room_names, user_name):
         )
 
 
-def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
+def edit_existing_reservation(
+    reservation_list,
+    room_names,
+    user_name,
+    room_display_to_name,
+) -> None:
     reservation_options = {
         event_name: reservation_id for reservation_id, event_name in reservation_list
     }
