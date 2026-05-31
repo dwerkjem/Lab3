@@ -84,7 +84,9 @@ def edit_rooms():
         )
         db.conn.commit()
     else:
-        capacity = questionary.text(f"What is the capacity of {room_name}?").ask()
+        capacity = questionary.text(
+            f"What is the capacity of {room_name}?", validate=crud.integer_validator
+        ).ask()
         day_rate = questionary.text(
             f"What is the rate of {room_name}?", "139.99", crud.dollar_validator
         ).ask()
