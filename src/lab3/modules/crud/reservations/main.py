@@ -145,6 +145,7 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
     )
 
     current = db.cursor.fetchone()
+
     (
         room_id,
         attendees,
@@ -154,6 +155,7 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
         end,
         notes_default,
     ) = current
+
     date_default = start if start == end else f"{start} {end}"
 
     event_name = set_event_name(default=event_name_default)
@@ -168,6 +170,9 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
         crud.integer_validator,
         default=str(attendees),
     )
+
+    selected_service_ids = choose_reservation_services()
+
     notes = set_notes(default=notes_default or "")
 
     if date_string is None or attendees_count is None:
@@ -199,6 +204,8 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
             reservation_id,
         ),
     )
+
+    save_reservation_services(reservation_id, selected_service_ids)
 
     db.conn.commit()
 
