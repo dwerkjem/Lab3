@@ -4,7 +4,6 @@ Description: CRUD-compliant event booking TUI for Fountain View Hall.
 """
 
 import os
-import sqlite3
 import sys
 from pathlib import Path
 from typing import Union
@@ -13,17 +12,12 @@ import questionary
 
 from lab3.modules.admin import admin_flow
 from lab3.modules.user.user_flow import Customer
+from lab3.modules.crud.database import Database
+
+db = Database()
 
 BASE_DIR = Path(__file__).parent
 ROOT_DIR = BASE_DIR.parent.parent
-
-
-data_dir = ROOT_DIR / "data"
-
-db_path = data_dir / "fountainViewHall.db"
-
-conn = sqlite3.connect(db_path)
-cursor = conn.cursor()
 
 
 def run_sql_file(sql_file: Union[str, bytes, os.PathLike]):
@@ -33,13 +27,13 @@ def run_sql_file(sql_file: Union[str, bytes, os.PathLike]):
         sql_file (Union[str, bytes, os.PathLike]): The sql query to run
     """
     sql_file = ROOT_DIR / "src/lab3" / sql_file
-    cursor.executescript(sql_file.read_text())
+    db.cursor.executescript(sql_file.read_text())
 
 
 run_sql_file("sql/schema.sql")
 
 
-conn.commit()
+db.conn.commit()
 
 
 def user_type() -> str:
