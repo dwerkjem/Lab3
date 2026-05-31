@@ -4,7 +4,9 @@ import questionary
 
 from lab3.modules.admin.customer_admin import AdminEditCustomer
 from lab3.modules.crud import rooms
-from lab3.modules.crud.reservations.optional_services.main import edit_add_service
+from lab3.modules.crud.reservations.optional_services import (
+    edit_add_service,
+)
 from lab3.modules.admin.reservations_admin import chose_reservations
 
 UNSECURE_PASSWORD = "pas"

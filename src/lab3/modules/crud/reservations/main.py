@@ -4,6 +4,7 @@ import questionary
 
 from lab3.modules.crud.database import Database
 from lab3.modules.crud.main import CRUD
+from lab3.modules.crud.reservations.optional_services import choose_reservation_services
 
 from lab3.modules.crud.reservations.values import (
     get_attendees_count,
@@ -14,6 +15,7 @@ from lab3.modules.crud.reservations.values import (
     set_event_type,
     set_notes,
 )
+
 
 db = Database()
 crud = CRUD(db)
@@ -76,6 +78,9 @@ def _setup(customer_id, room_names, user_name):
 
     start_datetime, end_datetime = _split_dates(date_string)
 
+    selected_service_ids = choose_reservation_services()
+    notes = set_notes()
+
     db.cursor.execute(
         """
         INSERT INTO reservations (
@@ -98,9 +103,12 @@ def _setup(customer_id, room_names, user_name):
             event_type.lower(),
             start_datetime,
             end_datetime,
-            set_notes(),
+            notes,
         ),
     )
+
+    reservation_id = db.cursor.lastrowid
+    save_reservation_services(reservation_id, selected_service_ids)
 
     db.conn.commit()
 
@@ -193,3 +201,35 @@ def edit_existing_reservation(reservation_list, room_names, user_name) -> None:
     )
 
     db.conn.commit()
+
+
+def save_reservation_services(reservation_id: int, service_ids: list[int]):
+    db.cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS reservation_services (
+            reservation_id INTEGER NOT NULL,
+            service_id INTEGER NOT NULL,
+
+            PRIMARY KEY (reservation_id, service_id),
+            FOREIGN KEY (reservation_id) REFERENCES reservations(reservation_id),
+            FOREIGN KEY (service_id) REFERENCES services(service_id)
+        )
+        """
+    )
+
+    db.cursor.execute(
+        """
+        DELETE FROM reservation_services
+        WHERE reservation_id = ?
+        """,
+        (reservation_id,),
+    )
+
+    for service_id in service_ids:
+        db.cursor.execute(
+            """
+            INSERT INTO reservation_services (reservation_id, service_id)
+            VALUES (?, ?)
+            """,
+            (reservation_id, service_id),
+        )

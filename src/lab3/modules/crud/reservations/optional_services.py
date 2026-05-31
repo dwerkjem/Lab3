@@ -7,13 +7,25 @@ db = Database()
 
 crud = CRUD(db)
 
+
 def edit_add_service():
-    service_name_dict = crud.make_or_select_existing_autocomplete(autocomplete_prompt="Chose a service ro add or edit.",id_col="service_id", row_col="name", table="services", validator=service_validator)
-    service_name = service_name_dict["value"]
-    if not service_name_dict["existed"]:
-        add_service(service_name)
-    else:
+    rows = db.fetchall("SELECT service_id, name FROM services")
+    service_names = [name for _, name in rows]
+
+    service_name = CRUD.chose_autocomplete_or_text_prompt(
+        "Choose a service to add or edit.",
+        service_validator,
+        service_names,
+    )
+
+    if service_name is None:
+        return
+
+    if service_name in service_names:
         edit_service(service_name)
+    else:
+        add_service(service_name)
+
 
 def get_list_of_services():
     rows = db.fetchall("""
@@ -49,14 +61,14 @@ def choose_services():
         or []
     )
 
-def service_validator(service:str):
+
+def service_validator(service: str):
     if service != service.title():
         return "Make title case."
     return True
 
 
-def add_service(name:str):
-
+def add_service(name: str):
     description = questionary.text("Description:").ask()
 
     cost_dollars = questionary.text(
@@ -100,6 +112,7 @@ def add_service(name:str):
 
     db.commit()
     print(f"Added service: {name}")
+
 
 def edit_service(name: str):
     service = db.fetchone(
@@ -177,3 +190,36 @@ def edit_service(name: str):
 
     db.commit()
     print(f"Updated service: {new_name}")
+
+
+def choose_reservation_services():
+    rows = db.fetchall(
+        """
+        SELECT service_id, name, description, cost_cents, charge_by
+        FROM services
+        ORDER BY name
+        """
+    )
+
+    if not rows:
+        print("No services are available.")
+        return []
+
+    choices = [
+        questionary.Choice(
+            title=(
+                f"{row[1]} - ${row[3] / 100:.2f} ({row[4]}) "
+                f"{'| ' + row[2] if row[2] else ''}"
+            ),
+            value=row[0],
+        )
+        for row in rows
+    ]
+
+    return (
+        questionary.checkbox(
+            "Select optional services for this reservation:",
+            choices=choices,
+        ).ask()
+        or []
+    )
