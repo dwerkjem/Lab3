@@ -10,13 +10,13 @@ import questionary
 from lab3.modules.admin.customer_admin import AdminEditCustomer
 from lab3.modules.crud import rooms
 from lab3.modules.crud.reservations.optional_services import edit_add_service
-from lab3.modules.admin.reservations_admin import chose_reservations
+from lab3.modules.admin.reservations_admin import choose_reservations
 
-UNSECURE_PASSWORD = "pas"  # would be in .env in production
+DEMO_PASSWORD = "pas"  # would be in .env in production
 
 
 def main() -> None:
-    """Authenticated admin will pick an option and it will take them to the respected module."""
+    """Authenticated admin will pick an option and it will take them to the respective module."""
     if not auth():
         sys.exit(0)
 
@@ -29,7 +29,7 @@ def main() -> None:
     elif option == "Services":
         edit_add_service()
     elif option == "Reservations":
-        chose_reservations()
+        choose_reservations()
 
     else:
         print("Bye admin! Come back soon!")
@@ -37,17 +37,17 @@ def main() -> None:
 
 
 def auth() -> bool | None:
-    """Authenticates admin a real world example would use crypto library for sure.
+    """Authenticates admin in production use crypto library instead.
 
     Returns:
-        bool | None: Whether the user successfully logged in as an admin or not
+        bool | None: Whether the user successfully logged in as an admin or not.
+        This will return `None` if cancelled.
     """
     password = questionary.password(
-        f"Verify with a password\n"
-        f"  The password is `{UNSECURE_PASSWORD}` for demo purposes"
+        f"Verify with a password\n  The password is `{DEMO_PASSWORD}` for demo purposes"
     ).ask()
 
-    if password == UNSECURE_PASSWORD:
+    if password == DEMO_PASSWORD:
         questionary.print("Welcome Admin", style="bold fg:ansigreen")
         return True
 
@@ -56,6 +56,11 @@ def auth() -> bool | None:
 
 
 def admin_options() -> str | None:
+    """Returns choosen option.
+
+    Returns:
+        str | None: Option choosen.
+    """
     return questionary.select(
         "What do you want to change?",
         ["Rooms", "Customers", "Reservations", "Services", "Quit"],

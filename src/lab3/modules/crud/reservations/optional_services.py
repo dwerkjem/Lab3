@@ -12,7 +12,7 @@ def edit_add_service():
     rows = db.fetchall("SELECT service_id, name FROM services")
     service_names = [name for _, name in rows]
 
-    service_name = CRUD.chose_autocomplete_or_text_prompt(
+    service_name = CRUD.choose_autocomplete_or_text_prompt(
         "Choose a service to add or edit.",
         service_validator,
         service_names,

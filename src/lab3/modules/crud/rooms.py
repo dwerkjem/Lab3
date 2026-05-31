@@ -31,7 +31,7 @@ def _edit_room_validator(existing_room_names: list[str], current_name: str):
 def edit_rooms():
     room_list = db.fetchall("SELECT room_id, name FROM rooms")
     room_names = [name for _, name in room_list]
-    room_name: str = crud.chose_autocomplete_or_text_prompt(
+    room_name: str = crud.choose_autocomplete_or_text_prompt(
         "What room do you want to edit/create?", _rooms_validator, room_names
     )
 

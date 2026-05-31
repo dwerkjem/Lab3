@@ -5,6 +5,7 @@ from lab3.modules.crud.database import Database
 db = Database()
 
 reservation_style = questionary.Style(
+    # Sets colors for status
     [
         ("approved", "fg:green"),
         ("pending", "fg:red"),
@@ -12,7 +13,8 @@ reservation_style = questionary.Style(
 )
 
 
-def chose_reservations():
+def choose_reservations() -> None:
+    """Let an admin choose a reservation and perform an action on it."""
     while True:
         reservation_id = choose_reservation()
 

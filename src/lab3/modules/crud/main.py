@@ -36,7 +36,7 @@ class CRUD:
         return True
 
     @staticmethod
-    def chose_autocomplete_or_text_prompt(
+    def choose_autocomplete_or_text_prompt(
         autocomplete_prompt: str,
         validator: Callable,
         list_of_options: list[str] | None = None,
@@ -91,7 +91,7 @@ class CRUD:
         dictionary_val_id = {value: row_id for row_id, value in rows}
         list_of_options = list(dictionary_val_id.keys())
 
-        selected_row_col = CRUD.chose_autocomplete_or_text_prompt(
+        selected_row_col = CRUD.choose_autocomplete_or_text_prompt(
             autocomplete_prompt, validator, list_of_options
         )
 
