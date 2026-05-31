@@ -1,20 +1,29 @@
-from lab3.modules.crud.pricing.main import (
-    DEPOSIT_PERCENT,
-    HOLIDAY_SURCHARGE,
-    WEEEKEND_SURCHARGE,
-    WEEKEND_HOLIDAY_SURCHARGE,
-    reservation_days,
-)
-
-from lab3.modules.crud.database import Database
-
+from datetime import datetime, timedelta
 
 import holidays
 
-
-from datetime import datetime, timedelta
+from lab3.modules.crud.database import Database
 
 db = Database()
+
+WEEEKEND_SURCHARGE = 0.10
+HOLIDAY_SURCHARGE = 0.15
+WEEKEND_HOLIDAY_SURCHARGE = 0.05
+DEPOSIT_PERCENT = 0.25
+
+
+def reservation_days(start_datetime: str, end_datetime: str) -> int:
+    start_date = datetime.strptime(
+        start_datetime.split()[0],
+        "%Y-%m-%d",
+    ).date()
+
+    end_date = datetime.strptime(
+        end_datetime.split()[0],
+        "%Y-%m-%d",
+    ).date()
+
+    return (end_date - start_date).days + 1
 
 
 def calculate_room_total(
