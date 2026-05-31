@@ -114,15 +114,17 @@ class AdminEditCustomer:
         if not confirmed:
             return
 
-        db.cursor.execute(
-            """
+        reservation_ids = [
+            row[0]
+            for row in db.fetchall(
+                """
             SELECT reservation_id
             FROM reservations
             WHERE customer_id = ?
             """,
-            (self.customer_id,),
-        )
-        reservation_ids = [row[0] for row in db.fetchall()]
+                (self.customer_id,),
+            )
+        ]
 
         for reservation_id in reservation_ids:
             db.cursor.execute(
@@ -159,7 +161,7 @@ class AdminEditCustomer:
             FROM customers
             ORDER BY full_name
             """
-        return [row[0] for row in db.db.fetchall(query)]
+        return [row[0] for row in db.fetchall(query)]
 
     def _edit_validate_name(self, names_list: list[str], current_name: str = ""):
         def validate(full_name: str):

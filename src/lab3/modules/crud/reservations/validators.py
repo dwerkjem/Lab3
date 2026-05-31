@@ -30,8 +30,8 @@ def validate_datetime(room_id):
         parts = dates.split()
         today = datetime.date.today()
 
-        if len(parts) > 2:
-            return "Use only 2 dates"
+        if len(parts) != 2:
+            return "Enter exactly 2 dates using format `YY-MM-DD YY-MM-DD`."
 
         parsed_dates = []
 
@@ -45,18 +45,20 @@ def validate_datetime(room_id):
             if parsed_date < today:
                 return f"{date} is in the past. Please enter today or a future date."
 
-        if len(parsed_dates) == 2:
-            start, end = parsed_dates
+        start, end = parsed_dates
 
-            if start > end:
-                return f"The start date {parts[0]} must be before {parts[1]}"
+        if start > end:
+            return f"The start date {parts[0]} must be before {parts[1]}"
 
-            if (end - start).days > 30:
-                return "Reservations cannot be longer than 30 days without special approval."
+        if (end - start).days > 30:
+            return (
+                "Reservations cannot be longer than 30 days without special approval."
+            )
 
-            reserved_dates = _is_reserved_date_in_range(room_id, parts[0], parts[1])
-            if reserved_dates:
-                return f"That room is already reserved during: {reserved_dates}"
+        reserved_dates = _is_reserved_date_in_range(room_id, parts[0], parts[1])
+
+        if reserved_dates:
+            return f"That room is already reserved during: {reserved_dates}"
 
         return True
 
