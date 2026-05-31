@@ -66,7 +66,7 @@ def set_event_type(default="Other"):
 def set_date(room_id, default=""):
     instruction_text = """Use format `start-date end-date`, where both dates are in `YY-MM-DD`
 format and separated by a space.
-Example: `2026-05-01 2026-05-29`
+Example: `26-05-01 26-05-29`
 Or enter one date for a single day."""
 
     return questionary.text(
