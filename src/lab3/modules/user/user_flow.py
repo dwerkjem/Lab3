@@ -70,6 +70,7 @@ class Customer:
                 "Make Reservation or Edit Reservations",
                 "Make or View Payment",
                 "Edit Profile",
+                "Back",
                 "Quit",
             ],
         ).ask()
@@ -81,21 +82,24 @@ class Customer:
         else:
             print(f"Thank you for registering {self.user_name}")
 
-        option = self.user_options()
+        while True:
+            option = self.user_options()
 
-        if option == "Quit":
-            print("Good bye!")
-            sys.exit(0)
+            if option == "Quit" or option is None:
+                print("Good bye!")
+                sys.exit(0)
 
-        elif option == "Edit Profile":
-            edit_customer(self.user_id, self.user_name)
+            if option == "Back":
+                return
 
-        elif option == "Make Reservation or Edit Reservations":
-            edit_reservations(self.name_dict)
+            elif option == "Edit Profile":
+                edit_customer(self.user_id, self.user_name)
 
-        elif option == "Make or View Payment":
-            make_or_view_payment(self.user_id)
+            elif option == "Make Reservation or Edit Reservations":
+                edit_reservations(self.name_dict)
 
+            elif option == "Make or View Payment":
+                make_or_view_payment(self.user_id)
 
 if __name__ == "__main__":
     Customer().main()

@@ -4,6 +4,7 @@ Description: All admin options are accessed here.
 """
 
 import sys
+import time
 
 import questionary
 
@@ -12,13 +13,14 @@ from lab3.modules.crud import rooms
 from lab3.modules.crud.reservations.optional_services import edit_add_service
 from lab3.modules.admin.reservations_admin import choose_reservations
 
-DEMO_PASSWORD = "pas"  # would be in .env in production
+DEMO_PASSWORD = "pas"  # TODO #1 move DEMO_PASSWORD to env file
 
 
 def main() -> None:
     """Authenticated admin will pick an option and it will take them to the respective module."""
     if not auth():
-        sys.exit(0)
+        time.sleep(0.5)
+        return
 
     option = admin_options()
 
@@ -30,7 +32,6 @@ def main() -> None:
         edit_add_service()
     elif option == "Reservations":
         choose_reservations()
-
     else:
         print("Bye admin! Come back soon!")
         sys.exit(0)

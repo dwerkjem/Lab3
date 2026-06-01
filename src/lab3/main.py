@@ -45,19 +45,22 @@ def user_type() -> str | None:
 
 def main() -> None:
     """Start the Fountain View Hall TUI and route the user by role."""
-    questionary.print(
-        "Welcome to Fountain View Hall's text user interface!",
-        style="bold fg:ansigreen",
-    )
-    user = user_type()
-    if user == "Admin":
-        admin_flow.main()
-    elif user == "Customer":
-        Customer().main()
-    else:
-        print("Good bye!")
-        sys.exit(0)
+    run = True
+    while run:
+        questionary.print(
+            "Welcome to Fountain View Hall's text user interface!",
+            style="bold fg:ansigreen",
+        )
 
+        user = user_type()
+
+        if user == "Admin":
+            admin_flow.main()
+        elif user == "Customer":
+            Customer().main()
+        elif user == "Quit" or user is None:
+            print("Good bye!")
+            run = False
 
 if __name__ == "__main__":
     main()
